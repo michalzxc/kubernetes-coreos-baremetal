@@ -1,0 +1,67 @@
+#cloud-config
+hostname: %HOST%
+# include one or more SSH public keys
+ssh_authorized_keys:
+  - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDZYL/631qBTScS+sQb9L7GKHczu1c9+ObEsmE5xyQBF9g1i0SiB/v1IxligpGMSFu1squfjsOZrBdGGCBaZ9rJQt7q1Uvi95QXA7ka6sAbxPvAppWypkutdytX9PY009C25SXzhG8Wo9MbcZF8g0dYJEyPnC+7OMf0Uz5EsqFGxSWhIqUSAc92mMye2YkI0Y1y+HUJUNAYjOK7rnaV34yL+bqOc3HQ/lFoCEpJ7AQmj+373z/CLRGJo+6ckBkptlFU2jCCbjeXE998MtBQ/OhjdibJBiQWuwiCf8ZQ1ggAVz4vl5gvMYRA9fC9MFW1ke2BbpnkAJZeUBDwM//TsK8R MonkeySphere2016-12-06T16:05:42 Michal Rydlikowski (Personal Secondary Email Address) <Michal.Rydlikowski@gmail.com>
+  - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCqtzL0th+fvk8YFDr+r4evH8s/xEAtXqEEPJN0ldyESyO/H64az4QRYaZTgwbLR6nY9Zk0VBH1UQ2M35flYH1ZMQViDaZ/CKXoctLmCgWSc05IYQUf/afruBKMmCvEJ1YAqWyY1h9rtNX2amICygxzEdFG/Pg1tiM4reTgTFxQOu15knCWKoYzZQ6WhUcvFU+E7d/OFYEzIAil7oAZiDzVPRnNY/HLPqnlisBy1HNiBqaX/nM3tDyxYPLDvROS0O6jhUzXJ1VK72cJskwHusLWsbLRTtKdRX9WX+4yYCzJEoRKYTKRLBYInkHqLjOYs9vM/SovgGI9wtvRgeDTfFyB michal.rydlikowski@concreteplatform.com
+  - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDgx5rf9UoTbmMPZa/ZeJnbQj+4VlIkDtoMT9YP1Fda//Jm9Pc2iC/v7azmaJZvkGw8wqIct0RUO0fQgxV/KpUtmKwwgtkhlcBkrOPxYqsVWk/avCPyx0RVlmNbclIB6jQ+q5Z90J5m6ygGlvrUKUOFfZMVluqWgH32oZzvEiKd4VbjA8/6C7lC8xhNcpNSU1I3K7OnpX14+HJSuk0d/CO3Gzgy/g0A871UqWkC+olGswD6AqSsUhKZobcDUe1LbL4u5WKSZbowzsvHiBw+aXhD04pUQ7U0wylk09IzrXsPV0TF+PeS/mi0wOj6x7JD6xW9UpGL1x9uFEVwxCr92f9i06j0pDWmP1Ju89tp12NMxAgkTkJknCioZNEtrWluGQMkHMvOyxVS/hdJUvNFMd1RK3eJftJG5+1dAYcfhLBuy6AXwmsJpgoK6YNDuFO8/wqh7mJff9JXLZqt/QHKOZGbnRLzRW0dQPa5DVUeCvIanPQ/gs++8WZPcZaCDqJbOh7cJ8fYU7Q6iiPWlLjb82QjB5z/DW5qN5Tba0nRNEFTFuTXSXlw7S66vjqfscaT+dNJ3rCai3Wn1i94tdywBgAhsT3Dm2BrLKbJ17QOH9cR0CxY5acicSu7+FELUjUsttHC7OLZ3sWxhmu0aZHDrktsc4qgjiuBNbRj2SN6WjedJQ== henry.dobson@concreteplatform.com
+  - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCkFdtiCsOT+gu7T9paGzP9Uoe5XiirlEnXR7aUTQd/l+QQ1stB8pbH7nlTH2tTw2hsjLAOnyXnDzJP3YiI11ZJPzFzzOKK8yyhi32eT1Be576dqOdMnw5j+btdp3T10Nmot3qM6p512f14nw0B2xdK2OvSm2o6/RoH9zbYVMy1klXm7way+JlmWsYODRVftuskSUr0pTCY1LkKBQr/23yuCtP32gGQiPSQ6Cvp2Q7mLtdmV5jgcfFmH9kQfx88mZdxSXzjTivyoD6dt6u9rtaX3AuGnv2ivV2FV5PPWGDUxnDIUzZumt1pdriI1SUVECJo+UBAKT46hyUx7dPMufRR justin.miller@concreteplatform.com
+h
+write_files:
+  - path: /etc/kubernetes/install.sh
+    owner: "root"
+    permissions: 0700
+    content: |
+%INSTALL_SCRIPT%
+  - path: /etc/kubernetes/ssl/ca.pem
+    owner: "root"
+    permissions: 0600
+    content: |
+%CA_PEM%
+  - path: /etc/kubernetes/ssl/%NODETYPE%.pem
+    owner: "root"
+    permissions: 0600
+    content: |
+%NODE_PEM%
+  - path: /etc/kubernetes/ssl/%NODETYPE%-key.pem
+    owner: "root"
+    permissions: 0600
+    content: |
+%NODE_KEY_PEM%
+  - path: /etc/kubernetes/cni/docker_opts_cni.env
+coreos:
+  etcd2:
+    # generate a new token for each unique cluster from https://discovery.etcd.io/new?size=3
+    # specify the initial size of your cluster with ?size=X
+    #discovery: https://discovery.etcd.io/0997f1b9b4886974cf21d1b3193ede5c
+    advertise-client-urls: http://%IP%:2379
+    #initial-advertise-peer-urls: http://10.10.10.20:2380
+    # listen on both the official ports and the legacy ports
+    # legacy ports can be omitted if your application doesn't depend on them
+    listen-client-urls: http://0.0.0.0:2379
+    #listen-peer-urls: http://10.10.10.20:2380
+  units:
+  - name: etcd2.service
+    command: start
+  - name: fleet.service
+    command: start
+  - name: kubeinstall.service
+    command: start
+    content: |
+      [Unit]
+      Description=K8S installer
+      After=etcd2.service
+      Requires=etcd2.service
+
+      [Service]
+      Type=oneshot
+      Environment=ADVERTISE_IP=%ADVERTISE_IP%
+      ExecStart=/etc/kubernetes/install.sh
+  - name: 10-dhcp.network
+    [Match]
+    name=e*
+
+    [Network]
+    Address=%IP%/%PREFIX%
+    Gateway=%GW%
+    DNS=8.8.8.8
