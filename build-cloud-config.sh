@@ -33,7 +33,7 @@ if [ $# = "2" ]; then
 	GW=$3
 	echo $GW>inventory/gw
 	NODETYPE="apiserver"
-	INSTALLURL=https://raw.githubusercontent.com/coreos/coreos-kubernetes/master/multi-node/generic/controller-install.sh
+	INSTALLURL=kubeinstall/controller-install.sh
 
 	openssl genrsa -out inventory/node-${HOST}/ssl/apiserver-key.pem 2048
 	IP=${IP} openssl req -new -key inventory/node-${HOST}/ssl/apiserver-key.pem -out inventory/node-${HOST}/ssl/apiserver.csr -subj "/CN=kube-apiserver" -config master-openssl.cnf
@@ -44,7 +44,7 @@ else
 	ADVERTISE_IP=${IP}
 	MASTER=$3
 	NODETYPE="worker"
-	INSTALLURL=https://raw.githubusercontent.com/coreos/coreos-kubernetes/master/multi-node/generic/worker-install.sh
+	INSTALLURL=kubeinstall/worker-install.sh
 
 	openssl genrsa -out inventory/node-${HOST}/ssl/worker-key.pem 2048
 	WORKER_IP=${IP} openssl req -new -key inventory/node-${HOST}/ssl/worker-key.pem -out inventory/node-${HOST}/ssl/worker.csr -subj "/CN=${HOST}" -config worker-openssl.cnf
@@ -55,7 +55,7 @@ fi
 
 # create cloud config folder
 mkdir -p inventory/node-${HOST}/cloud-config/openstack/latest
-wget -O inventory/node-${HOST}/install.sh ${INSTALLURL}
+cp  ${INSTALLURL} inventory/node-${HOST}/install.sh 
 cat inventory/node-${HOST}/install.sh | \
 sed -e "s/ ETCD_ENDPOINTS=/ ETCD_ENDPOINTS=http:\/\/${IP}:2379/" | \
 sed -e "s/USE_CALICO=false/USE_CALICO=true/" | \
@@ -71,8 +71,8 @@ sed -e "s/%NODE_PEM%/$(<inventory/node-${HOST}/ssl/${NODETYPE}.pem sed -e 's/\(.
 sed -e "s/%NODE_KEY_PEM%/$(<inventory/node-${HOST}/ssl/${NODETYPE}-key.pem sed -e 's/\(.*\)/      \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')/g" | \
 sed -e s/%NODETYPE%/${NODETYPE}/g | \
 sed -e s/%ADVERTISE_IP%/${ADVERTISE_IP}/g | \
+sed -e s/%PREFIX%/${PREFIX}/g | \
+sed -e s/%GW%/${GW}/g | \
 sed -e s/%IP%/${IP}/g > inventory/node-${HOST}/cloud-config/openstack/latest/user_data
-sed -e s/%PREFIX%/${PREFIX}/g > inventory/node-${HOST}/cloud-config/openstack/latest/user_data
-sed -e s/%GW%/${GW}/g > inventory/node-${HOST}/cloud-config/openstack/latest/user_data
 
 ./build-image.sh inventory/node-${HOST}
