@@ -1,4 +1,4 @@
-#FORK
+#FORK of https://github.com/xetys/kubernetes-coreos-baremetal
 
 * gateway 10.10.10.254
 * controller, 10.10.10.1
