@@ -62,7 +62,8 @@ cp  ${INSTALLURL} inventory/node-${HOST}/install.sh
 cat inventory/node-${HOST}/install.sh | \
 sed -e "s/ ETCD_ENDPOINTS=/ ETCD_ENDPOINTS=http:\/\/${IP}:2379/" | \
 sed -e "s/USE_CALICO=false/USE_CALICO=true/" | \
-sed -e "s/CONTROLLER_ENDPOINT=/CONTROLLER_ENDPOINT=https:\/\/${IP}/g" > inventory/node-${HOST}/install.sh
+sed -e "s/CONTROLLER_ENDPOINT=/CONTROLLER_ENDPOINT=https:\/\/${IP}/g" > inventory/node-${HOST}/installtmp.sh
+mv inventory/node-${HOST}/installtmp.sh inventory/node-${HOST}/install.sh
 
 GW="$(cat inventory/gw)"
 # bash templating
