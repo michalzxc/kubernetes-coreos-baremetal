@@ -30,6 +30,7 @@ fi
 if [ $1 = "controller" ]; then
 	# configure master
 	ADVERTISE_IP=${IP}
+	HOSTIP=${IP}
 	GW=$3
 	echo $GW>inventory/gw
 	NODETYPE="apiserver"
@@ -43,17 +44,19 @@ else
 	# configure worker
 	ADVERTISE_IP=${IP}
 	MASTER=$3
+	HOSTIP=${IP}
 	NODETYPE="worker"
 	INSTALLURL=kubeinstall/worker-install.sh
 
 	openssl genrsa -out inventory/node-${HOST}/ssl/worker-key.pem 2048
 	WORKER_IP=${IP} openssl req -new -key inventory/node-${HOST}/ssl/worker-key.pem -out inventory/node-${HOST}/ssl/worker.csr -subj "/CN=${HOST}" -config worker-openssl.cnf
 	WORKER_IP=${IP} openssl x509 -req -in inventory/node-${HOST}/ssl/worker.csr -CA ssl/ca.pem -CAkey ssl/ca-key.pem -CAcreateserial -out inventory/node-${HOST}/ssl/worker.pem -days 3650 -extensions v3_req -extfile worker-openssl.cnf
-	echo "creating CoreOS cloud-config for $HOST with K8S version $K8S_VER to join $IP"
+	echo "creating CoreOS cloud-config for $HOST with K8S version $K8S_VER to join $MASTER"
 	IP=${MASTER} # for etcd2 config
 fi
 
 # create cloud config folder
+rm inventory/node-${HOST}/install.sh
 mkdir -p inventory/node-${HOST}/cloud-config/openstack/latest
 cp  ${INSTALLURL} inventory/node-${HOST}/install.sh 
 cat inventory/node-${HOST}/install.sh | \
@@ -63,6 +66,7 @@ sed -e "s/CONTROLLER_ENDPOINT=/CONTROLLER_ENDPOINT=https:\/\/${IP}/g" > inventor
 
 GW="$(cat inventory/gw)"
 # bash templating
+rm inventory/node-${HOST}/cloud-config/openstack/latest/user_data
 cat certonly-tpl.yaml | \
 sed -e s/%HOST%/${HOST}/g | \
 sed -e "s/%INSTALL_SCRIPT%/$(<inventory/node-${HOST}/install.sh sed -e 's/\(.*\)/      \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')/g" | \
@@ -71,8 +75,9 @@ sed -e "s/%NODE_PEM%/$(<inventory/node-${HOST}/ssl/${NODETYPE}.pem sed -e 's/\(.
 sed -e "s/%NODE_KEY_PEM%/$(<inventory/node-${HOST}/ssl/${NODETYPE}-key.pem sed -e 's/\(.*\)/      \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')/g" | \
 sed -e s/%NODETYPE%/${NODETYPE}/g | \
 sed -e s/%ADVERTISE_IP%/${ADVERTISE_IP}/g | \
+sed -e s/%IP%/${IP}/g | \
 sed -e s/%PREFIX%/${PREFIX}/g | \
 sed -e s/%GW%/${GW}/g | \
-sed -e s/%IP%/${IP}/g > inventory/node-${HOST}/cloud-config/openstack/latest/user_data
+sed -e s/%HOSTIP%/${HOSTIP}/g > inventory/node-${HOST}/cloud-config/openstack/latest/user_data
 
 ./build-image.sh inventory/node-${HOST}
