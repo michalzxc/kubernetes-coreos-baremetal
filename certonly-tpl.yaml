@@ -50,11 +50,10 @@ coreos:
     listen-client-urls: http://0.0.0.0:2379
     #listen-peer-urls: http://10.10.10.20:2380
   units:
-    - name: zz-default.network
-      runtime: true
+    - name: 00-%HOST%.network
       content: |
         [Match]
-        name=eth0
+        Name=eth0
         
         [Network]
         Address=%HOSTIP%/%PREFIX%
