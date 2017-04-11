@@ -39,6 +39,7 @@ if [ ! -z "$(echo "$1"|grep "controller")" ]; then
 	openssl genrsa -out inventory/node-${HOST}/ssl/apiserver-key.pem 2048
 	IP=${IP} openssl req -new -key inventory/node-${HOST}/ssl/apiserver-key.pem -out inventory/node-${HOST}/ssl/apiserver.csr -subj "/CN=kube-apiserver" -config master-openssl.cnf
 	IP=${IP} openssl x509 -req -in inventory/node-${HOST}/ssl/apiserver.csr -CA ssl/ca.pem -CAkey ssl/ca-key.pem -CAcreateserial -out inventory/node-${HOST}/ssl/apiserver.pem -days 3650 -extensions v3_req -extfile master-openssl.cnf
+	echo $HOSTIP > inventory/node-${HOST}/ip
 	echo "creating CoreOS cloud-config for controller ${HOST}(${IP})"
 else
 	# configure worker
@@ -51,6 +52,7 @@ else
 	openssl genrsa -out inventory/node-${HOST}/ssl/worker-key.pem 2048
 	WORKER_IP=${IP} openssl req -new -key inventory/node-${HOST}/ssl/worker-key.pem -out inventory/node-${HOST}/ssl/worker.csr -subj "/CN=${HOST}" -config worker-openssl.cnf
 	WORKER_IP=${IP} openssl x509 -req -in inventory/node-${HOST}/ssl/worker.csr -CA ssl/ca.pem -CAkey ssl/ca-key.pem -CAcreateserial -out inventory/node-${HOST}/ssl/worker.pem -days 3650 -extensions v3_req -extfile worker-openssl.cnf
+	echo $HOSTIP > inventory/node-${HOST}/ip
 	echo "creating CoreOS cloud-config for $HOST with K8S version $K8S_VER to join $MASTER"
 	IP=${MASTER} # for etcd2 config
 fi
