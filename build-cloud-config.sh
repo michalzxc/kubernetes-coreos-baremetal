@@ -27,7 +27,7 @@ if [ ! -f ssl/ca.pem ]; then
 	openssl x509 -req -in ssl/admin.csr -CA ssl/ca.pem -CAkey ssl/ca-key.pem -CAcreateserial -out ssl/admin.pem -days 3650
 fi
 
-if [ $1 = "controller" ]; then
+if [ ! -z "$(echo "$1"|grep "controller")" ]; then
 	# configure master
 	ADVERTISE_IP=${IP}
 	HOSTIP=${IP}
