@@ -56,7 +56,7 @@ else
 fi
 
 # create cloud config folder
-rm inventory/node-${HOST}/install.sh
+rm -f inventory/node-${HOST}/install.sh
 mkdir -p inventory/node-${HOST}/cloud-config/openstack/latest
 cp  ${INSTALLURL} inventory/node-${HOST}/install.sh 
 cat inventory/node-${HOST}/install.sh | \
@@ -67,7 +67,7 @@ mv inventory/node-${HOST}/installtmp.sh inventory/node-${HOST}/install.sh
 
 GW="$(cat inventory/gw)"
 # bash templating
-rm inventory/node-${HOST}/cloud-config/openstack/latest/user_data
+rm -f inventory/node-${HOST}/cloud-config/openstack/latest/user_data
 cat certonly-tpl.yaml | \
 sed -e s/%HOST%/${HOST}/g | \
 sed -e "s/%INSTALL_SCRIPT%/$(<inventory/node-${HOST}/install.sh sed -e 's/\(.*\)/      \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')/g" | \
