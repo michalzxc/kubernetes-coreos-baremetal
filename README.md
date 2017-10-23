@@ -25,3 +25,25 @@ $ ./build-image.sh inventory/node-controller
 It is also possible to use multiple controller machines, which have to be balanced over one DNS hostname.
 
 Read my [blog article about deploying kubernetes](http://stytex.de/blog/2017/01/25/deploy-kubernetes-to-bare-metal-with-nginx/)
+
+--
+-- virt / virsh
+--
+ip=192.168.115.2
+./build-cloud-config.sh controller $ip/24 192.168.115.1
+cluster=testcoreos; vm=1
+sudo cp -a /var/lib/libvirt/images/coreos_production_openstack_image.img /var/lib/libvirt/images/$cluster$vm.img
+sudo cp ~/developer/concrete/coreos/kubernetes-coreos-baremetal-cloudconfig/inventory/node-controller/config.iso /var/lib/libvirt/images/${cluster}${vm}config.iso
+sudo chown libvirt-qemu:libvirt-qemu /var/lib/libvirt/images/$cluster$vm.img /var/lib/libvirt/images/${cluster}${vm}config.iso
+virt-install --connect qemu:///system -n $cluster$vm --memory 2048 --vcpus=2 --disk /var/lib/libvirt/images/$cluster$vm.img --network network=kube --os-type=linux --os-variant=rhel7 --noreboot --noautoconsole --cdrom /var/lib/libvirt/images/${cluster}${vm}config.iso
+ssh-keygen -f "/home/michalzxc/.ssh/known_hosts" -R $ip
+./configure-kubectl.sh $ip
+ssh $ip
+
+-- delete
+vid=$(virsh --connect qemu:///system list|egrep "\s$cluster$vm\s"|awk '{print $1}')
+virsh --connect qemu:///system destroy $vid
+virsh --connect qemu:///system undefine $cluster$vm
+rm inventory -Rf; mkdir inventory
+rm ssl -Rf; mkdir ssl
+
