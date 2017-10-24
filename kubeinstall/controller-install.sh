@@ -104,7 +104,7 @@ clusters:
 - name: local
   cluster:
     certificate-authority: /etc/kubernetes/ssl/ca.pem
-    server: ${CONTROLLER_ENDPOINT}
+    server: http://127.0.0.1:8080
 users:
 - name: kubelet
   user:
