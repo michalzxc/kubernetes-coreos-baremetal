@@ -10,7 +10,7 @@ export ETCD_ENDPOINTS=
 export CONTROLLER_ENDPOINT=
 
 # Specify the version (vX.Y.Z) of Kubernetes assets to deploy
-export K8S_VER=v1.5.4_coreos.0
+export K8S_VER=v1.7.8_coreos.2
 
 # Hyperkube image repository to use.
 export HYPERKUBE_IMAGE_REPO=quay.io/coreos/hyperkube
@@ -89,10 +89,8 @@ ExecStartPre=/usr/bin/mkdir -p /var/log/containers
 ExecStartPre=-/usr/bin/rkt rm --uuid-file=${uuid_file}
 ExecStartPre=/usr/bin/mkdir -p /opt/cni/bin
 ExecStart=/usr/lib/coreos/kubelet-wrapper \
-  --api-servers=${CONTROLLER_ENDPOINT} \
-  --cni-conf-dir=/etc/kubernetes/cni/net.d \
-  --network-plugin=cni \
   --container-runtime=${CONTAINER_RUNTIME} \
+  --require-kubeconfig=true \
   --rkt-path=/usr/bin/rkt \
   --rkt-stage1-image=coreos.com/rkt/stage1-coreos \
   --register-node=true \
@@ -182,6 +180,7 @@ clusters:
 - name: local
   cluster:
     certificate-authority: /etc/kubernetes/ssl/ca.pem
+    server: ${CONTROLLER_ENDPOINT}
 users:
 - name: kubelet
   user:

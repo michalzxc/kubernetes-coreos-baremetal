@@ -102,19 +102,19 @@ apiVersion: v1
 kind: Config
 clusters:
 - name: local
-cluster:
-  certificate-authority: /etc/kubernetes/ssl/ca.pem
-  server: http://127.0.0.1:8080
+  cluster:
+    certificate-authority: /etc/kubernetes/ssl/ca.pem
+    server: ${CONTROLLER_ENDPOINT}
 users:
 - name: kubelet
-user:
-  client-certificate: /etc/kubernetes/ssl/worker.pem
-  client-key: /etc/kubernetes/ssl/worker-key.pem
+  user:
+    client-certificate: /etc/kubernetes/ssl/apiserver.pem
+    client-key: /etc/kubernetes/ssl/apiserver-key.pem
 contexts:
 - context:
-  cluster: local
-  user: kubelet
-name: kubelet-context
+    cluster: local
+    user: kubelet
+  name: kubelet-context
 current-context: kubelet-context
 EOF
   fi
@@ -146,9 +146,8 @@ ExecStartPre=/usr/bin/mkdir -p /var/log/containers
 ExecStartPre=-/usr/bin/rkt rm --uuid-file=${uuid_file}
 ExecStart=/usr/lib/coreos/kubelet-wrapper \
   --kubeconfig /etc/kubernetes/master-kubeconfig.yaml \
+  --require-kubeconfig=true \
   --register-schedulable=false \
-  --cni-conf-dir=/etc/kubernetes/cni/net.d \
-  --network-plugin=cni \
   --container-runtime=${CONTAINER_RUNTIME} \
   --rkt-path=/usr/bin/rkt \
   --rkt-stage1-image=coreos.com/rkt/stage1-coreos \
