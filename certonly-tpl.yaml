@@ -15,7 +15,7 @@ users:
      - "docker"
     ssh_authorized_keys:
       - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDZYL/631qBTScS+sQb9L7GKHczu1c9+ObEsmE5xyQBF9g1i0SiB/v1IxligpGMSFu1squfjsOZrBdGGCBaZ9rJQt7q1Uvi95QXA7ka6sAbxPvAppWypkutdytX9PY009C25SXzhG8Wo9MbcZF8g0dYJEyPnC+7OMf0Uz5EsqFGxSWhIqUSAc92mMye2YkI0Y1y+HUJUNAYjOK7rnaV34yL+bqOc3HQ/lFoCEpJ7AQmj+373z/CLRGJo+6ckBkptlFU2jCCbjeXE998MtBQ/OhjdibJBiQWuwiCf8ZQ1ggAVz4vl5gvMYRA9fC9MFW1ke2BbpnkAJZeUBDwM//TsK8R MonkeySphere2016-12-06T16:05:42 Michal Rydlikowski (Personal Secondary Email Address) <Michal.Rydlikowski@gmail.com>
-      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCqtzL0th+fvk8YFDr+r4evH8s/xEAtXqEEPJN0ldyESyO/H64az4QRYaZTgwbLR6nY9Zk0VBH1UQ2M35flYH1ZMQViDaZ/CKXoctLmCgWSc05IYQUf/afruBKMmCvEJ1YAqWyY1h9rtNX2amICygxzEdFG/Pg1tiM4reTgTFxQOu15knCWKoYzZQ6WhUcvFU+E7d/OFYEzIAil7oAZiDzVPRnNY/HLPqnlisBy1HNiBqaX/nM3tDyxYPLDvROS0O6jhUzXJ1VK72cJskwHusLWsbLRTtKdRX9WX+4yYCzJEoRKYTKRLBYInkHqLjOYs9vM/SovgGI9wtvRgeDTfFyB michal.rydlikowski@concreteplatform.com 
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCqtzL0th+fvk8YFDr+r4evH8s/xEAtXqEEPJN0ldyESyO/H64az4QRYaZTgwbLR6nY9Zk0VBH1UQ2M35flYH1ZMQViDaZ/CKXoctLmCgWSc05IYQUf/afruBKMmCvEJ1YAqWyY1h9rtNX2amICygxzEdFG/Pg1tiM4reTgTFxQOu15knCWKoYzZQ6WhUcvFU+E7d/OFYEzIAil7oAZiDzVPRnNY/HLPqnlisBy1HNiBqaX/nM3tDyxYPLDvROS0O6jhUzXJ1VK72cJskwHusLWsbLRTtKdRX9WX+4yYCzJEoRKYTKRLBYInkHqLjOYs9vM/SovgGI9wtvRgeDTfFyB michal.rydlikowski@concreteplatform.com
 write_files:
   - path: /etc/kubernetes/install.sh
     owner: "root"
@@ -39,30 +39,42 @@ write_files:
 %NODE_KEY_PEM%
   - path: /etc/kubernetes/cni/docker_opts_cni.env
 coreos:
-  etcd2:
-    # generate a new token for each unique cluster from https://discovery.etcd.io/new?size=3
-    # specify the initial size of your cluster with ?size=X
-    #discovery: https://discovery.etcd.io/0997f1b9b4886974cf21d1b3193ede5c
-    advertise-client-urls: http://%IP%:2379
-    #initial-advertise-peer-urls: http://10.10.10.20:2380
-    # listen on both the official ports and the legacy ports
-    # legacy ports can be omitted if your application doesn't depend on them
-    listen-client-urls: http://0.0.0.0:2379
-    #listen-peer-urls: http://10.10.10.20:2380
   units:
     - name: 00-%HOST%.network
       content: |
         [Match]
         Name=eth0
-        
+
         [Network]
         Address=%HOSTIP%/%PREFIX%
         Gateway=%GW%
         DNS=8.8.8.8
-    - name: etcd2.service
-      command: start
     - name: fleet.service
       command: start
+    - name: etcd2.service
+      command: start
+      enable: true
+      content: |
+        [Unit]
+        Description=etcd2
+        Conflicts=etcd.service
+        [Service]
+        User=etcd
+        Type=notify
+        Environment="ETCD_ADVERTISE_CLIENT_URLS=http://%IP%:2379"
+        Environment="ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379"
+        Environment=ETCD_DATA_DIR=/var/lib/etcd2
+        Environment=ETCD_NAME=%m
+        ExecStart=/usr/bin/etcd2
+        Restart=always
+        RestartSec=10s
+        LimitNOFILE=40000
+        TimeoutStartSec=0
+        [Install]
+        WantedBy=multi-user.target
+    - name: fleet.service
+      command: start
+      enable: true
     - name: kubeinstall.service
       command: start
       content: |
@@ -70,7 +82,7 @@ coreos:
         Description=K8S installer
         After=etcd2.service
         Requires=etcd2.service
-        
+
         [Service]
         Type=oneshot
         Environment=ADVERTISE_IP=%ADVERTISE_IP%
