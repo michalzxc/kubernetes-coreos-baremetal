@@ -146,6 +146,7 @@ ExecStartPre=/usr/bin/mkdir -p /var/log/containers
 ExecStartPre=-/usr/bin/rkt rm --uuid-file=${uuid_file}
 ExecStart=/usr/lib/coreos/kubelet-wrapper \
   --kubeconfig /etc/kubernetes/master-kubeconfig.yaml \
+  --hostname-override=%HOST% \
   --require-kubeconfig=true \
   --register-schedulable=false \
   --container-runtime=${CONTAINER_RUNTIME} \
