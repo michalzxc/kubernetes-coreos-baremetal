@@ -46,6 +46,7 @@ if [ ! -z "$(echo "$1"|grep "controller")" ]; then
 	IP=${IP} openssl x509 -req -in inventory/node-${HOST}/ssl/apiserver.csr -CA ssl/ca.pem -CAkey ssl/ca-key.pem -CAcreateserial -out inventory/node-${HOST}/ssl/apiserver.pem -days 3650 -extensions v3_req -extfile master-openssl.cnf
 	echo "$HOSTIP/$PREFIX" > inventory/node-${HOST}/ip
 	echo "creating CoreOS cloud-config for controller ${HOST}(${IP})"
+	ENDPOINTS=${IP}
 else
 	# configure worker
 	ADVERTISE_IP=${IP}
@@ -61,6 +62,9 @@ else
 	echo "$HOSTIP/$PREFIX" > inventory/node-${HOST}/ip
 	echo "creating CoreOS cloud-config for $HOST with K8S version $K8S_VER to join $MASTER"
 	IP=${MASTER} # for etcd2 config
+
+	ENDPOINTS="$(cat inventory/masters|egrep -o "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"|sed "s/^/http:\\/\\//g"|sed "s/$/:2379/g"|xargs|sed 's/ /,/g')"
+	echo "ENDPOINTS: $ENDPOINTS"
 fi
 
 # create cloud config folder
@@ -68,7 +72,7 @@ rm -f inventory/node-${HOST}/install.sh
 mkdir -p inventory/node-${HOST}/cloud-config/openstack/latest
 cp  ${INSTALLURL} inventory/node-${HOST}/install.sh
 cat inventory/node-${HOST}/install.sh | \
-sed -e "s/ ETCD_ENDPOINTS=/ ETCD_ENDPOINTS=http:\/\/${IP}:2379/" | \
+sed -e "s%ETCD_ENDPOINTS=% ETCD_ENDPOINTS=${ENDPOINTS}%" | \
 sed -e "s/USE_CALICO=false/USE_CALICO=true/" | \
 sed -e "s/CONTROLLER_ENDPOINT=/CONTROLLER_ENDPOINT=https:\/\/${IP}/g" > inventory/node-${HOST}/installtmp.sh
 mv inventory/node-${HOST}/installtmp.sh inventory/node-${HOST}/install.sh
