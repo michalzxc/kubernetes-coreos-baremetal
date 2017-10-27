@@ -310,6 +310,9 @@ EOF
 
 }
 
+systemctl enable haproxy.service
+systemctl start haproxy.service
+
 init_config
 init_templates
 

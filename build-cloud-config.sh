@@ -67,6 +67,8 @@ else
 	echo "ENDPOINTS: $ENDPOINTS"
 fi
 
+HAPROXYAPI="$(cat inventory/masters|egrep -o "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"|awk '{print $1":443"}'|xargs)"
+
 # create cloud config folder
 rm -f inventory/node-${HOST}/install.sh
 mkdir -p inventory/node-${HOST}/cloud-config/openstack/latest
@@ -74,7 +76,7 @@ cp  ${INSTALLURL} inventory/node-${HOST}/install.sh
 cat inventory/node-${HOST}/install.sh | \
 sed -e "s% ETCD_ENDPOINTS=% ETCD_ENDPOINTS=${ENDPOINTS}%" | \
 sed -e "s/USE_CALICO=false/USE_CALICO=true/" | \
-sed -e "s/CONTROLLER_ENDPOINT=/CONTROLLER_ENDPOINT=https:\/\/${IP}/g" > inventory/node-${HOST}/installtmp.sh
+sed -e "s/CONTROLLER_ENDPOINT=/CONTROLLER_ENDPOINT=http:\/\/127.0.0.1:8182/g" > inventory/node-${HOST}/installtmp.sh
 mv inventory/node-${HOST}/installtmp.sh inventory/node-${HOST}/install.sh
 
 GW="$(cat inventory/gw)"
@@ -92,6 +94,7 @@ sed -e s/%IP%/${IP}/g | \
 sed -e s/%PREFIX%/${PREFIX}/g | \
 sed -e s/%FIRSTMASTER%/${FIRSTMASTER}/g | \
 sed -e s/%GW%/${GW}/g | \
+sed -e "s/%HAPROXYAPI%/${HAPROXYAPI}/g" | \
 sed -e s/%ETCD_INITIAL_CLUSTER_STATE%/${ETCD_INITIAL_CLUSTER_STATE}/g | \
 sed -e s/%HOSTIP%/${HOSTIP}/g > inventory/node-${HOST}/cloud-config/openstack/latest/user_data
 

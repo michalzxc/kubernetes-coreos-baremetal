@@ -82,6 +82,22 @@ coreos:
         TimeoutStartSec=0
         [Install]
         WantedBy=multi-user.target
+    - name: haproxy.service
+      enable: false
+      content: |
+        [Unit]
+        Description=HAPROXY Kubernetes API
+        After=docker.service
+        Requires=docker.service
+
+        [Service]
+        ExecStartPre=-/usr/bin/docker kill kubeapihaproxy
+        ExecStartPre=-/usr/bin/docker rm kubeapihaproxy
+        ExecStart=/usr/bin/docker run -e "MASTERS=%HAPROXYAPI%" -p 127.0.0.1:8182:8182 --name kubeapihaproxy -d --cap-add=SYS_ADMIN --cap-add DAC_READ_SEARCH --tmpfs /run --tmpfs /run/lock -v /sys/fs/cgroup:/sys/fs/cgroup:ro -v /etc/kubernetes/ssl/:/etc/kubernetes/ssl/:ro --log-driver=journald --log-opt tag=kubeapihaproxy concreteplatform/kubeapihaproxy:latest
+        ExecStop=/usr/bin/docker stop kubeapihaproxy
+
+        [Install]
+        WantedBy=multi-user.target
     - name: fleet.service
       command: start
       enable: true
