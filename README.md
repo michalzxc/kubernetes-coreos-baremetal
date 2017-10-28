@@ -35,6 +35,9 @@ cluster=testcoreos; vm=1
 ip=192.168.115.3
 cluster=testcoreos; vm=2
 ./build-cloud-config.sh controller$vm $ip/24 192.168.115.1
+ip=192.168.115.4
+cluster=testcoreos; vm=3
+./build-cloud-config.sh controller$vm $ip/24 192.168.115.1
 ./updatemasters.sh
 ip=192.168.115.2
 cluster=testcoreos; vm=1
@@ -51,12 +54,10 @@ sudo cp ~/developer/concrete/coreos/kubernetes-coreos-baremetal-cloudconfig/inve
 sudo chown libvirt-qemu:libvirt-qemu /var/lib/libvirt/images/$cluster$vm.img /var/lib/libvirt/images/${cluster}${vm}config.iso
 virt-install --connect qemu:///system -n $cluster$vm --memory 2048 --vcpus=2 --disk /var/lib/libvirt/images/$cluster$vm.img --network network=kube --os-type=linux --os-variant=rhel7 --noreboot --noautoconsole --cdrom /var/lib/libvirt/images/${cluster}${vm}config.iso
 ssh-keygen -f "/home/michalzxc/.ssh/known_hosts" -R $ip
-
 ip=192.168.115.4
 cluster=testcoreos; vm=3
-./build-cloud-config.sh worker$vm $ip/24 192.168.115.2
 sudo cp -a /var/lib/libvirt/images/coreos_production_openstack_image.img /var/lib/libvirt/images/$cluster$vm.img
-sudo cp ~/developer/concrete/coreos/kubernetes-coreos-baremetal-cloudconfig/inventory/node-worker$vm/config.iso /var/lib/libvirt/images/${cluster}${vm}config.iso
+sudo cp ~/developer/concrete/coreos/kubernetes-coreos-baremetal-cloudconfig/inventory/node-controller$vm/config.iso /var/lib/libvirt/images/${cluster}${vm}config.iso
 sudo chown libvirt-qemu:libvirt-qemu /var/lib/libvirt/images/$cluster$vm.img /var/lib/libvirt/images/${cluster}${vm}config.iso
 virt-install --connect qemu:///system -n $cluster$vm --memory 2048 --vcpus=2 --disk /var/lib/libvirt/images/$cluster$vm.img --network network=kube --os-type=linux --os-variant=rhel7 --noreboot --noautoconsole --cdrom /var/lib/libvirt/images/${cluster}${vm}config.iso
 ssh-keygen -f "/home/michalzxc/.ssh/known_hosts" -R $ip
@@ -72,6 +73,15 @@ ssh-keygen -f "/home/michalzxc/.ssh/known_hosts" -R $ip
 
 ip=192.168.115.6
 cluster=testcoreos; vm=5
+./build-cloud-config.sh worker$vm $ip/24 192.168.115.2
+sudo cp -a /var/lib/libvirt/images/coreos_production_openstack_image.img /var/lib/libvirt/images/$cluster$vm.img
+sudo cp ~/developer/concrete/coreos/kubernetes-coreos-baremetal-cloudconfig/inventory/node-worker$vm/config.iso /var/lib/libvirt/images/${cluster}${vm}config.iso
+sudo chown libvirt-qemu:libvirt-qemu /var/lib/libvirt/images/$cluster$vm.img /var/lib/libvirt/images/${cluster}${vm}config.iso
+virt-install --connect qemu:///system -n $cluster$vm --memory 2048 --vcpus=2 --disk /var/lib/libvirt/images/$cluster$vm.img --network network=kube --os-type=linux --os-variant=rhel7 --noreboot --noautoconsole --cdrom /var/lib/libvirt/images/${cluster}${vm}config.iso
+ssh-keygen -f "/home/michalzxc/.ssh/known_hosts" -R $ip
+
+ip=192.168.115.7
+cluster=testcoreos; vm=6
 ./build-cloud-config.sh worker$vm $ip/24 192.168.115.2
 sudo cp -a /var/lib/libvirt/images/coreos_production_openstack_image.img /var/lib/libvirt/images/$cluster$vm.img
 sudo cp ~/developer/concrete/coreos/kubernetes-coreos-baremetal-cloudconfig/inventory/node-worker$vm/config.iso /var/lib/libvirt/images/${cluster}${vm}config.iso
@@ -101,6 +111,10 @@ vid=$(virsh --connect qemu:///system list|egrep "\s$cluster$vm\s"|awk '{print $1
 virsh --connect qemu:///system destroy $vid
 virsh --connect qemu:///system undefine $cluster$vm
 cluster=testcoreos; vm=5
+vid=$(virsh --connect qemu:///system list|egrep "\s$cluster$vm\s"|awk '{print $1}')
+virsh --connect qemu:///system destroy $vid
+virsh --connect qemu:///system undefine $cluster$vm
+cluster=testcoreos; vm=6
 vid=$(virsh --connect qemu:///system list|egrep "\s$cluster$vm\s"|awk '{print $1}')
 virsh --connect qemu:///system destroy $vid
 virsh --connect qemu:///system undefine $cluster$vm
