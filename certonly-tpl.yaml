@@ -112,16 +112,15 @@ coreos:
         Environment=ADVERTISE_IP=%ADVERTISE_IP%
         ExecStart=/etc/kubernetes/install.sh
     - name: kubeinstallhealth.service
-      contents: |
+      content: |
         [Unit]
         Description=Check if kubeinstall failed and restart
-
         [Service]
         Type=oneshot
         ExecStart=/usr/bin/sh -c 'if [ ! -z "$(systemctl is-failed kubeinstall.service|grep failed)" ]; then systemctl restart kubeinstall.service; fi;'
     - name: kubeinstallhealth.timer
       enable: true
-      contents: |
+      content: |
         [Unit]
         Description=Run kubeinstallhealth.service every 5 minutes
         [Timer]
