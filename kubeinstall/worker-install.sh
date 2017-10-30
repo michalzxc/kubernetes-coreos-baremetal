@@ -329,5 +329,7 @@ fi
 
 systemctl enable flanneld; systemctl start flanneld
 
-
 systemctl enable kubelet; systemctl start kubelet
+
+sleep 60
+systemctl restart flanneld
