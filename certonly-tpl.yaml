@@ -73,7 +73,7 @@ coreos:
         Environment=ETCD_DATA_DIR=/var/lib/etcd2
         Environment=ETCD_NAME=%HOST%
         Environment=ETCD_INITIAL_CLUSTER_STATE=%ETCD_INITIAL_CLUSTER_STATE%
-        Environment=ETCD_INITIAL_CLUSTER="%ETCD_INITIAL_CLUSTER%"
+        Environment=ETCD_INITIAL_CLUSTER=%ETCD_INITIAL_CLUSTER%
         Environment="ETCD_INITIAL_ADVERTISE_PEER_URLS=http://%IP%:2380"
         ExecStart=/usr/bin/etcd2
         Restart=always
