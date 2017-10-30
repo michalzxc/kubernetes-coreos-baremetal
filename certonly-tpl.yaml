@@ -119,6 +119,7 @@ coreos:
         Type=oneshot
         ExecStart=/usr/bin/sh -c 'if [ ! -z "$(systemctl is-failed kubeinstall.service|grep failed)" ]; then systemctl restart kubeinstall.service; fi;'
     - name: kubeinstallhealth.timer
+      command: start
       enable: true
       content: |
         [Unit]

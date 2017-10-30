@@ -1,0 +1,505 @@
+#cloud-config
+
+hostname: worker5
+# include one or more SSH public keys
+ssh_authorized_keys:
+  - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDZYL/631qBTScS+sQb9L7GKHczu1c9+ObEsmE5xyQBF9g1i0SiB/v1IxligpGMSFu1squfjsOZrBdGGCBaZ9rJQt7q1Uvi95QXA7ka6sAbxPvAppWypkutdytX9PY009C25SXzhG8Wo9MbcZF8g0dYJEyPnC+7OMf0Uz5EsqFGxSWhIqUSAc92mMye2YkI0Y1y+HUJUNAYjOK7rnaV34yL+bqOc3HQ/lFoCEpJ7AQmj+373z/CLRGJo+6ckBkptlFU2jCCbjeXE998MtBQ/OhjdibJBiQWuwiCf8ZQ1ggAVz4vl5gvMYRA9fC9MFW1ke2BbpnkAJZeUBDwM//TsK8R MonkeySphere2016-12-06T16:05:42 Michal Rydlikowski (Personal Secondary Email Address) <Michal.Rydlikowski@gmail.com>
+  - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCqtzL0th+fvk8YFDr+r4evH8s/xEAtXqEEPJN0ldyESyO/H64az4QRYaZTgwbLR6nY9Zk0VBH1UQ2M35flYH1ZMQViDaZ/CKXoctLmCgWSc05IYQUf/afruBKMmCvEJ1YAqWyY1h9rtNX2amICygxzEdFG/Pg1tiM4reTgTFxQOu15knCWKoYzZQ6WhUcvFU+E7d/OFYEzIAil7oAZiDzVPRnNY/HLPqnlisBy1HNiBqaX/nM3tDyxYPLDvROS0O6jhUzXJ1VK72cJskwHusLWsbLRTtKdRX9WX+4yYCzJEoRKYTKRLBYInkHqLjOYs9vM/SovgGI9wtvRgeDTfFyB michal.rydlikowski@concreteplatform.com
+  - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDgx5rf9UoTbmMPZa/ZeJnbQj+4VlIkDtoMT9YP1Fda//Jm9Pc2iC/v7azmaJZvkGw8wqIct0RUO0fQgxV/KpUtmKwwgtkhlcBkrOPxYqsVWk/avCPyx0RVlmNbclIB6jQ+q5Z90J5m6ygGlvrUKUOFfZMVluqWgH32oZzvEiKd4VbjA8/6C7lC8xhNcpNSU1I3K7OnpX14+HJSuk0d/CO3Gzgy/g0A871UqWkC+olGswD6AqSsUhKZobcDUe1LbL4u5WKSZbowzsvHiBw+aXhD04pUQ7U0wylk09IzrXsPV0TF+PeS/mi0wOj6x7JD6xW9UpGL1x9uFEVwxCr92f9i06j0pDWmP1Ju89tp12NMxAgkTkJknCioZNEtrWluGQMkHMvOyxVS/hdJUvNFMd1RK3eJftJG5+1dAYcfhLBuy6AXwmsJpgoK6YNDuFO8/wqh7mJff9JXLZqt/QHKOZGbnRLzRW0dQPa5DVUeCvIanPQ/gs++8WZPcZaCDqJbOh7cJ8fYU7Q6iiPWlLjb82QjB5z/DW5qN5Tba0nRNEFTFuTXSXlw7S66vjqfscaT+dNJ3rCai3Wn1i94tdywBgAhsT3Dm2BrLKbJ17QOH9cR0CxY5acicSu7+FELUjUsttHC7OLZ3sWxhmu0aZHDrktsc4qgjiuBNbRj2SN6WjedJQ== henry.dobson@concreteplatform.com
+  - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCkFdtiCsOT+gu7T9paGzP9Uoe5XiirlEnXR7aUTQd/l+QQ1stB8pbH7nlTH2tTw2hsjLAOnyXnDzJP3YiI11ZJPzFzzOKK8yyhi32eT1Be576dqOdMnw5j+btdp3T10Nmot3qM6p512f14nw0B2xdK2OvSm2o6/RoH9zbYVMy1klXm7way+JlmWsYODRVftuskSUr0pTCY1LkKBQr/23yuCtP32gGQiPSQ6Cvp2Q7mLtdmV5jgcfFmH9kQfx88mZdxSXzjTivyoD6dt6u9rtaX3AuGnv2ivV2FV5PPWGDUxnDIUzZumt1pdriI1SUVECJo+UBAKT46hyUx7dPMufRR justin.miller@concreteplatform.com
+users:
+  - name: "michalzxc"
+    passwd: "$6$BP4OCopq$QZujrmUwUQvD3GAGrjNOLJLz.o0./MXxL3KM1509jgxd2RxRnia75G8QL2cf72B5rTxycg30zGIx61lNyoqtN0"
+    groups:
+     - "sudo"
+     - "docker"
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDZYL/631qBTScS+sQb9L7GKHczu1c9+ObEsmE5xyQBF9g1i0SiB/v1IxligpGMSFu1squfjsOZrBdGGCBaZ9rJQt7q1Uvi95QXA7ka6sAbxPvAppWypkutdytX9PY009C25SXzhG8Wo9MbcZF8g0dYJEyPnC+7OMf0Uz5EsqFGxSWhIqUSAc92mMye2YkI0Y1y+HUJUNAYjOK7rnaV34yL+bqOc3HQ/lFoCEpJ7AQmj+373z/CLRGJo+6ckBkptlFU2jCCbjeXE998MtBQ/OhjdibJBiQWuwiCf8ZQ1ggAVz4vl5gvMYRA9fC9MFW1ke2BbpnkAJZeUBDwM//TsK8R MonkeySphere2016-12-06T16:05:42 Michal Rydlikowski (Personal Secondary Email Address) <Michal.Rydlikowski@gmail.com>
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCqtzL0th+fvk8YFDr+r4evH8s/xEAtXqEEPJN0ldyESyO/H64az4QRYaZTgwbLR6nY9Zk0VBH1UQ2M35flYH1ZMQViDaZ/CKXoctLmCgWSc05IYQUf/afruBKMmCvEJ1YAqWyY1h9rtNX2amICygxzEdFG/Pg1tiM4reTgTFxQOu15knCWKoYzZQ6WhUcvFU+E7d/OFYEzIAil7oAZiDzVPRnNY/HLPqnlisBy1HNiBqaX/nM3tDyxYPLDvROS0O6jhUzXJ1VK72cJskwHusLWsbLRTtKdRX9WX+4yYCzJEoRKYTKRLBYInkHqLjOYs9vM/SovgGI9wtvRgeDTfFyB michal.rydlikowski@concreteplatform.com
+write_files:
+  - path: /etc/kubernetes/install.sh
+    owner: "root"
+    permissions: 0700
+    content: |
+      #!/bin/bash
+      set -e
+      
+      # List of etcd servers (http://ip:port), comma separated
+      export ETCD_ENDPOINTS=http://192.168.115.2:2379,http://192.168.115.3:2379,http://192.168.115.4:2379
+      
+      # The endpoint the worker node should use to contact controller nodes (https://ip:port)
+      # In HA configurations this should be an external DNS record or loadbalancer in front of the control nodes.
+      # However, it is also possible to point directly to a single control node.
+      export CONTROLLER_ENDPOINT=http://127.0.0.1:8182
+      
+      # Specify the version (vX.Y.Z) of Kubernetes assets to deploy
+      export K8S_VER=v1.7.8_coreos.2
+      
+      # Hyperkube image repository to use.
+      export HYPERKUBE_IMAGE_REPO=quay.io/coreos/hyperkube
+      
+      # The CIDR network to use for pod IPs.
+      # Each pod launched in the cluster will be assigned an IP out of this range.
+      # Each node will be configured such that these IPs will be routable using the flannel overlay network.
+      export POD_NETWORK=10.2.0.0/16
+      
+      # The IP address of the cluster DNS service.
+      # This must be the same DNS_SERVICE_IP used when configuring the controller nodes.
+      export DNS_SERVICE_IP=10.3.0.10
+      
+      # Whether to use Calico for Kubernetes network policy.
+      export USE_CALICO=true
+      
+      # Determines the container runtime for kubernetes to use. Accepts 'docker' or 'rkt'.
+      export CONTAINER_RUNTIME=docker
+      
+      # The above settings can optionally be overridden using an environment file:
+      ENV_FILE=/run/coreos-kubernetes/options.env
+      
+      # To run a self hosted Calico install it needs to be able to write to the CNI dir
+      if [ "${USE_CALICO}" = "true" ]; then
+          export CALICO_OPTS="--volume cni-bin,kind=host,source=/opt/cni/bin \
+                              --mount volume=cni-bin,target=/opt/cni/bin"
+      else
+          export CALICO_OPTS=""
+      fi
+      
+      # -------------
+      
+      function init_config {
+          local REQUIRED=( 'ADVERTISE_IP' 'ETCD_ENDPOINTS' 'CONTROLLER_ENDPOINT' 'DNS_SERVICE_IP' 'K8S_VER' 'HYPERKUBE_IMAGE_REPO' 'USE_CALICO' )
+      
+          if [ -f $ENV_FILE ]; then
+              export $(cat $ENV_FILE | xargs)
+          fi
+      
+          if [ -z $ADVERTISE_IP ]; then
+              export ADVERTISE_IP=$(awk -F= '/COREOS_PUBLIC_IPV4/ {print $2}' /etc/environment)
+          fi
+      
+          for REQ in "${REQUIRED[@]}"; do
+              if [ -z "$(eval echo \$$REQ)" ]; then
+                  echo "Missing required config value: ${REQ}"
+                  exit 1
+              fi
+          done
+      }
+      
+      function init_templates {
+          local TEMPLATE=/etc/systemd/system/kubelet.service
+          local uuid_file="/var/run/kubelet-pod.uuid"
+          if [ ! -f $TEMPLATE ]; then
+              echo "TEMPLATE: $TEMPLATE"
+              mkdir -p $(dirname $TEMPLATE)
+              cat << EOF > $TEMPLATE
+      [Service]
+      Environment=KUBELET_IMAGE_TAG=${K8S_VER}
+      Environment=KUBELET_IMAGE_URL=${HYPERKUBE_IMAGE_REPO}
+      Environment="RKT_RUN_ARGS=--uuid-file-save=${uuid_file} \
+        --volume dns,kind=host,source=/etc/resolv.conf \
+        --mount volume=dns,target=/etc/resolv.conf \
+        --volume rkt,kind=host,source=/opt/bin/host-rkt \
+        --mount volume=rkt,target=/usr/bin/rkt \
+        --volume var-lib-rkt,kind=host,source=/var/lib/rkt \
+        --mount volume=var-lib-rkt,target=/var/lib/rkt \
+        --volume stage,kind=host,source=/tmp \
+        --mount volume=stage,target=/tmp \
+        --volume var-log,kind=host,source=/var/log \
+        --mount volume=var-log,target=/var/log \
+        ${CALICO_OPTS}"
+      ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
+      ExecStartPre=/usr/bin/mkdir -p /var/log/containers
+      ExecStartPre=-/usr/bin/rkt rm --uuid-file=${uuid_file}
+      ExecStartPre=/usr/bin/mkdir -p /opt/cni/bin
+      ExecStart=/usr/lib/coreos/kubelet-wrapper \
+        --container-runtime=${CONTAINER_RUNTIME} \
+        --hostname-override=%HOST% \
+        --require-kubeconfig=true \
+        --rkt-path=/usr/bin/rkt \
+        --rkt-stage1-image=coreos.com/rkt/stage1-coreos \
+        --register-node=true \
+        --allow-privileged=true \
+        --pod-manifest-path=/etc/kubernetes/manifests \
+        --hostname-override=${ADVERTISE_IP} \
+        --cluster_dns=${DNS_SERVICE_IP} \
+        --cluster_domain=cluster.local \
+        --kubeconfig=/etc/kubernetes/worker-kubeconfig.yaml \
+        --tls-cert-file=/etc/kubernetes/ssl/worker.pem \
+        --tls-private-key-file=/etc/kubernetes/ssl/worker-key.pem
+      ExecStop=-/usr/bin/rkt stop --uuid-file=${uuid_file}
+      Restart=always
+      RestartSec=10
+      
+      [Install]
+      WantedBy=multi-user.target
+      EOF
+          fi
+      
+          local TEMPLATE=/opt/bin/host-rkt
+          if [ ! -f $TEMPLATE ]; then
+              echo "TEMPLATE: $TEMPLATE"
+              mkdir -p $(dirname $TEMPLATE)
+              cat << EOF > $TEMPLATE
+      #!/bin/sh
+      # This is bind mounted into the kubelet rootfs and all rkt shell-outs go
+      # through this rkt wrapper. It essentially enters the host mount namespace
+      # (which it is already in) only for the purpose of breaking out of the chroot
+      # before calling rkt. It makes things like rkt gc work and avoids bind mounting
+      # in certain rkt filesystem dependancies into the kubelet rootfs. This can
+      # eventually be obviated when the write-api stuff gets upstream and rkt gc is
+      # through the api-server. Related issue:
+      # https://github.com/coreos/rkt/issues/2878
+      exec nsenter -m -u -i -n -p -t 1 -- /usr/bin/rkt "\$@"
+      EOF
+          fi
+      
+          local TEMPLATE=/etc/systemd/system/load-rkt-stage1.service
+          if [ ${CONTAINER_RUNTIME} = "rkt" ] && [ ! -f $TEMPLATE ]; then
+              echo "TEMPLATE: $TEMPLATE"
+              mkdir -p $(dirname $TEMPLATE)
+              cat << EOF > $TEMPLATE
+      [Unit]
+      Description=Load rkt stage1 images
+      Documentation=http://github.com/coreos/rkt
+      Requires=network-online.target
+      After=network-online.target
+      Before=rkt-api.service
+      
+      [Service]
+      Type=oneshot
+      RemainAfterExit=yes
+      ExecStart=/usr/bin/rkt fetch /usr/lib/rkt/stage1-images/stage1-coreos.aci /usr/lib/rkt/stage1-images/stage1-fly.aci  --insecure-options=image
+      
+      [Install]
+      RequiredBy=rkt-api.service
+      EOF
+          fi
+      
+          local TEMPLATE=/etc/systemd/system/rkt-api.service
+          if [ ${CONTAINER_RUNTIME} = "rkt" ] && [ ! -f $TEMPLATE ]; then
+              echo "TEMPLATE: $TEMPLATE"
+              mkdir -p $(dirname $TEMPLATE)
+              cat << EOF > $TEMPLATE
+      [Unit]
+      Before=kubelet.service
+      
+      [Service]
+      ExecStart=/usr/bin/rkt api-service
+      Restart=always
+      RestartSec=10
+      
+      [Install]
+      RequiredBy=kubelet.service
+      EOF
+          fi
+      
+          local TEMPLATE=/etc/kubernetes/worker-kubeconfig.yaml
+          if [ ! -f $TEMPLATE ]; then
+              echo "TEMPLATE: $TEMPLATE"
+              mkdir -p $(dirname $TEMPLATE)
+              cat << EOF > $TEMPLATE
+      apiVersion: v1
+      kind: Config
+      clusters:
+      - name: local
+        cluster:
+          certificate-authority: /etc/kubernetes/ssl/ca.pem
+          server: ${CONTROLLER_ENDPOINT}
+      users:
+      - name: kubelet
+        user:
+          client-certificate: /etc/kubernetes/ssl/worker.pem
+          client-key: /etc/kubernetes/ssl/worker-key.pem
+      contexts:
+      - context:
+          cluster: local
+          user: kubelet
+        name: kubelet-context
+      current-context: kubelet-context
+      EOF
+          fi
+      
+          local TEMPLATE=/etc/kubernetes/manifests/kube-proxy.yaml
+          if [ ! -f $TEMPLATE ]; then
+              echo "TEMPLATE: $TEMPLATE"
+              mkdir -p $(dirname $TEMPLATE)
+              cat << EOF > $TEMPLATE
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: kube-proxy
+        namespace: kube-system
+        annotations:
+          rkt.alpha.kubernetes.io/stage1-name-override: coreos.com/rkt/stage1-fly
+      spec:
+        hostNetwork: true
+        containers:
+        - name: kube-proxy
+          image: ${HYPERKUBE_IMAGE_REPO}:$K8S_VER
+          command:
+          - /hyperkube
+          - proxy
+          - --master=${CONTROLLER_ENDPOINT}
+          - --cluster-cidr=${POD_NETWORK}
+          - --kubeconfig=/etc/kubernetes/worker-kubeconfig.yaml
+          securityContext:
+            privileged: true
+          volumeMounts:
+          - mountPath: /etc/ssl/certs
+            name: "ssl-certs"
+          - mountPath: /etc/kubernetes/worker-kubeconfig.yaml
+            name: "kubeconfig"
+            readOnly: true
+          - mountPath: /etc/kubernetes/ssl
+            name: "etc-kube-ssl"
+            readOnly: true
+          - mountPath: /var/run/dbus
+            name: dbus
+            readOnly: false
+        volumes:
+        - name: "ssl-certs"
+          hostPath:
+            path: "/usr/share/ca-certificates"
+        - name: "kubeconfig"
+          hostPath:
+            path: "/etc/kubernetes/worker-kubeconfig.yaml"
+        - name: "etc-kube-ssl"
+          hostPath:
+            path: "/etc/kubernetes/ssl"
+        - hostPath:
+            path: /var/run/dbus
+          name: dbus
+      EOF
+          fi
+      
+          local TEMPLATE=/etc/flannel/options.env
+          if [ ! -f $TEMPLATE ]; then
+              echo "TEMPLATE: $TEMPLATE"
+              mkdir -p $(dirname $TEMPLATE)
+              cat << EOF > $TEMPLATE
+      FLANNELD_IFACE=$ADVERTISE_IP
+      FLANNELD_ETCD_ENDPOINTS=$ETCD_ENDPOINTS
+      EOF
+          fi
+      
+          local TEMPLATE=/etc/systemd/system/flanneld.service.d/40-ExecStartPre-symlink.conf.conf
+          if [ ! -f $TEMPLATE ]; then
+              echo "TEMPLATE: $TEMPLATE"
+              mkdir -p $(dirname $TEMPLATE)
+              cat << EOF > $TEMPLATE
+      [Service]
+      ExecStartPre=/usr/bin/ln -sf /etc/flannel/options.env /run/flannel/options.env
+      EOF
+          fi
+      
+          local TEMPLATE=/etc/systemd/system/docker.service.d/40-flannel.conf
+          if [ ! -f $TEMPLATE ]; then
+              echo "TEMPLATE: $TEMPLATE"
+              mkdir -p $(dirname $TEMPLATE)
+              cat << EOF > $TEMPLATE
+      [Unit]
+      Requires=flanneld.service
+      After=flanneld.service
+      [Service]
+      EnvironmentFile=/etc/kubernetes/cni/docker_opts_cni.env
+      EOF
+          fi
+      
+          local TEMPLATE=/etc/kubernetes/cni/docker_opts_cni.env
+          if [ ! -f $TEMPLATE ]; then
+              echo "TEMPLATE: $TEMPLATE"
+              mkdir -p $(dirname $TEMPLATE)
+              cat << EOF > $TEMPLATE
+      DOCKER_OPT_BIP=""
+      DOCKER_OPT_IPMASQ=""
+      EOF
+      
+          fi
+      
+          local TEMPLATE=/etc/kubernetes/cni/net.d/10-flannel.conf
+          if [ "${USE_CALICO}" = "false" ] && [ ! -f "${TEMPLATE}" ]; then
+              echo "TEMPLATE: $TEMPLATE"
+              mkdir -p $(dirname $TEMPLATE)
+              cat << EOF > $TEMPLATE
+      {
+          "name": "podnet",
+          "type": "flannel",
+          "delegate": {
+              "isDefaultGateway": true
+          }
+      }
+      EOF
+          fi
+      
+      }
+      
+      systemctl enable haproxy.service
+      systemctl start haproxy.service
+      
+      init_config
+      init_templates
+      
+      chmod +x /opt/bin/host-rkt
+      
+      systemctl stop update-engine; systemctl mask update-engine
+      
+      systemctl daemon-reload
+      
+      if [ $CONTAINER_RUNTIME = "rkt" ]; then
+              systemctl enable load-rkt-stage1
+              systemctl enable rkt-api
+      fi
+      
+      systemctl enable flanneld; systemctl start flanneld
+      
+      
+      systemctl enable kubelet; systemctl start kubelet
+
+  - path: /etc/kubernetes/ssl/ca.pem
+    owner: "root"
+    permissions: 0600
+    content: |
+      -----BEGIN CERTIFICATE-----
+      MIIC+jCCAeKgAwIBAgIJAPh17scJCGbBMA0GCSqGSIb3DQEBCwUAMBIxEDAOBgNV
+      BAMMB2t1YmUtY2EwHhcNMTcxMDI4MTM1NzM3WhcNNDUwMzE1MTM1NzM3WjASMRAw
+      DgYDVQQDDAdrdWJlLWNhMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA
+      xRbtt+vFNE/FsiQh1T/Tj9nM1Oj+De1AeilFeFLWqu0OTQAHS2d9hzJJ11Nbb+ve
+      Susj52LRJKK6Z7sFvXtGCiQ8rVJrKSgvQrejsXAI37L/QHPDlxVj3tEXFcQITlai
+      RGryZBNkQnyQtBUVY7klPfLMEMlWITLUUd40KGGThSO40O7pb1k2qa0cGxhfC6Om
+      8ykxs+mZrYKrb+BhH/8iGVubKvbMAiqSk+GWtsEq3Z0VeJo1lk7iW9PtV5VtZez8
+      6a+1cv0Z+DUysfDkPTAFCq0bGWz9ezMLvqB+3O5I24jfc+1HnSxXehvC0FvEuTpe
+      GBOOrj6h1ZLPWbbUGlcmBwIDAQABo1MwUTAdBgNVHQ4EFgQUyBK9vD42B5puimsJ
+      0pfqVnPDRk0wHwYDVR0jBBgwFoAUyBK9vD42B5puimsJ0pfqVnPDRk0wDwYDVR0T
+      AQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAAOCAQEAOF9AT0Ejzlowl154tCqBgBzZ
+      zqwihPmiKlScIEPpwmcp+xG/xfAhnekMxK5uONLZrdEjbofKkXGIGtY0DpEwdNK8
+      WXMQQlz37pOB/NwDmRW/HN4kKzLqnRWwUHiwL8FrtDJ1Z9WerzRArb9ARd7IMYwO
+      xo3p6NKvO849aFdmlY+Agm2AZxHJGjTQVJR2CdtF9XDu9z1EkwB3mKILf9eqeN0w
+      2JywAlOZQhz0qiSQPDEgBv7GeCvqnyJ3gdE41ZGgAiAlODSMtqYVeaSjHIZw+LNA
+      Mm/vt2HvYiMnGNjmTfOmentc3tLAeTIEzxvINmzVhSuv3AAsrUxdgttrWBPfhQ==
+      -----END CERTIFICATE-----
+
+  - path: /etc/kubernetes/ssl/worker.pem
+    owner: "root"
+    permissions: 0600
+    content: |
+      -----BEGIN CERTIFICATE-----
+      MIIC0jCCAbqgAwIBAgIJAL2GgDxUDuY0MA0GCSqGSIb3DQEBCwUAMBIxEDAOBgNV
+      BAMMB2t1YmUtY2EwHhcNMTcxMDI4MTM1NzU5WhcNMjcxMDI2MTM1NzU5WjASMRAw
+      DgYDVQQDDAd3b3JrZXI1MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA
+      6jPC6g7swXSdgDdtxhWKz2HaS+hrnqpNzxjqgNcsz0Z3RkMEPNZ2OJ6QxttRykDt
+      1673RFHm0NdyidkLxo2RVA9yJ45DU7sZoOe7ILMXXMg40PXdNsgus6gHJ2EqEKv/
+      kDP7VefexZh3lwHG7yck4n9POw0+fTV7U8oRtJvNTPzuXCmwj9rEXx/i8ygqSYIf
+      R/wCmfgYlkYHsm1FWss4QHRdtozv9NyLwzkes7Wy3/K1hmwk7jU7rkBtxMrqRTUg
+      iGNJs70L8OR1fWkuEtKGGDQz9vcmHycpuLnjXSRIv/p7DjtkwMZw/Q7e1SijkmPt
+      LxjZZKxlCMSnDSkRDSwKHwIDAQABoyswKTAJBgNVHRMEAjAAMAsGA1UdDwQEAwIF
+      4DAPBgNVHREECDAGhwTAqHMGMA0GCSqGSIb3DQEBCwUAA4IBAQB04wF96XB1mrf4
+      28g2+ky0Ps3Xm+LgUx/9eqAgtD7UWymjkM/S9fBp+9Xjd6g4xVfLGjR9vP6Wleo1
+      xRSpjRq1i88jKez9yLUu2GSyjFFQqET353GHrtdzb7kV6lVO9/COe89xbEOjTE2r
+      DqIBEsYUyJexgri2RIfmpe6kC2InPdcBYQXPDcQTmE4G091SEvANRfZoOZMsTjZS
+      SX4Nkh8TZ+XmK9F0ja472PvwMAzGppx2JTRNLrdbzUCsVRC4zgnIlNoEbIAXgagZ
+      7eODZXyuTcFVs2EeJhlvIYNskG4wJ1AakIBek3NdYfOj5x+3BUnRtdMadLzlk2vM
+      jo4bJ/HW
+      -----END CERTIFICATE-----
+
+  - path: /etc/kubernetes/ssl/worker-key.pem
+    owner: "root"
+    permissions: 0600
+    content: |
+      -----BEGIN RSA PRIVATE KEY-----
+      MIIEpAIBAAKCAQEA6jPC6g7swXSdgDdtxhWKz2HaS+hrnqpNzxjqgNcsz0Z3RkME
+      PNZ2OJ6QxttRykDt1673RFHm0NdyidkLxo2RVA9yJ45DU7sZoOe7ILMXXMg40PXd
+      Nsgus6gHJ2EqEKv/kDP7VefexZh3lwHG7yck4n9POw0+fTV7U8oRtJvNTPzuXCmw
+      j9rEXx/i8ygqSYIfR/wCmfgYlkYHsm1FWss4QHRdtozv9NyLwzkes7Wy3/K1hmwk
+      7jU7rkBtxMrqRTUgiGNJs70L8OR1fWkuEtKGGDQz9vcmHycpuLnjXSRIv/p7Djtk
+      wMZw/Q7e1SijkmPtLxjZZKxlCMSnDSkRDSwKHwIDAQABAoIBAQDcG6OPSFGYi1nO
+      +8kOhoZ72zJHbvteFh6kiX0zc4cokshcX3WnG8Pl+JiGW+9lj1o4/7ZiHjs4gZOj
+      HDql87zm7NFTfa+nDMvMXp2O4OIPEBndwYSTDNZfgIagqv/WxV+djk0jcpT6zg1u
+      /XuSng5bVF0JWawmDtKGb/3t6ROsyqlVhSrpCS9p5qbpx3STX02H+KXV8wmW1V1Y
+      gS/2/XpLQj+JTQDes3D62Z1NtUc9C0lyk626/LbtEJvjiiTB33Jx/Db9uBx+1hql
+      msry7mwrUG6m7mc6epHFZiLmxRIHSXY+CnrXZnE9Jfo1PtYeBfeV9XwEHRpPimP8
+      vN9t1gZRAoGBAP0Ni6PeyK4G2d2GpfdeyGX+fHSXt3GinkxVCwIsIVU8dNlV9LuT
+      /vWufcCwsUizU4OVtW9TJxgGjU6iJxZpPIhvtB2CdQr+biTASNSnUoAqpbzY58mU
+      i9wy/6ZzAPEFnHwiWtvt+RoUMidE317aFCWomoANfWw7VTqkhSERdok5AoGBAOzu
+      A6HfnemG4ubxnPOd7gK5Ur37kMigdVo5UTg2iKoGeiiLnlWfMDCx2tWFa1RbQOgw
+      8NR+HwsayS78pIyuqYb2WKAxAJsI0hbIyHL/wR1kNnJ3Ccdli62d1aKYWaVTL0Bs
+      QA9Abp1IK3YNA07Ms8HOfBztD0yKkMWFB1KUoWYXAoGBAK/WELkOnj2mzw6KeJq6
+      Rt/whMRzg+m3SO3bjim1Rng26S739nW9McW/uOwDGz1cNmTRy2AO1LRyIRCJxkVh
+      XMmlbO+wben0v85TuofhuIcMm1vtEKrWyJR673/Wm8nez0zGhoIaCyTe8batudTs
+      DmHYlXrzZLqnQ+La3RMMUmSpAoGABOFqRb1bfWH/7o3vk70fGANFRxCVjOxxPmiL
+      2cKV0hrMDWXC3zSmQ3qGbXuQGG7AyYeojlgCv7HPjx45LYSzjUopzTL1NjxaR4nf
+      Ry8phTd5P6ZgFzFqTStBKVZGEnfCM2uHbkj/flHsQ0RFWywwT7+3IslnVUZNcSQq
+      YHMbWAUCgYB7N+mneQaldu1utdlyn5bWKEV2jiu0K6TsiGo0wCdJNDTghEoYsXU6
+      UN5bVFnp/dY1MfB+t8SSpPnZRj8Bfh+XO9Somma6FFVsUDDoxGySsf2zMzyR5W0G
+      mK0kQXxW6ah05RKd1KrwRIEb0iIKyuFHMozNP1WMCxx++kgMn0Q/WA==
+      -----END RSA PRIVATE KEY-----
+
+  - path: /etc/kubernetes/cni/docker_opts_cni.env
+coreos:
+  units:
+    - name: update-engine.service
+      mask: true
+      command: stop
+    - name: locksmithd.service
+      mask: true
+      command: stop
+    - name: 00-worker5.network
+      content: |
+        [Match]
+        Name=eth0
+
+        [Network]
+        Address=192.168.115.6/24
+        Gateway=192.168.115.1
+        DNS=8.8.8.8
+    - name: fleet.service
+      command: start
+    - name: etcd2.service
+      command: start
+      enable: true
+      content: |
+        [Unit]
+        Description=etcd2
+        Conflicts=etcd.service
+        [Service]
+        User=etcd
+        Type=notify
+        Environment="ETCD_ADVERTISE_CLIENT_URLS=http://192.168.115.2:2379"
+        Environment="ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379"
+        Environment=ETCD_DATA_DIR=/var/lib/etcd2
+        Environment=ETCD_NAME=worker5
+        ExecStart=/usr/bin/etcd2
+        Restart=always
+        RestartSec=10s
+        LimitNOFILE=40000
+        TimeoutStartSec=0
+        [Install]
+        WantedBy=multi-user.target
+    - name: haproxy.service
+      enable: false
+      content: |
+        [Unit]
+        Description=HAPROXY Kubernetes API
+        After=docker.service
+        Requires=docker.service
+
+        [Service]
+        ExecStart=/usr/bin/docker run --rm -e "MASTERS=192.168.115.2:443 192.168.115.3:443 192.168.115.4:443" -p 127.0.0.1:8182:8182 --name kubeapihaproxy --cap-add=SYS_ADMIN --cap-add DAC_READ_SEARCH --tmpfs /run --tmpfs /run/lock -v /sys/fs/cgroup:/sys/fs/cgroup:ro -v /etc/kubernetes/ssl/:/etc/kubernetes/ssl/:ro concreteplatform/kubeapihaproxy
+        ExecStop=/usr/bin/docker stop kubeapihaproxy
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: fleet.service
+      command: start
+      enable: true
+    - name: kubeinstall.service
+      command: start
+      content: |
+        [Unit]
+        Description=K8S installer
+        After=etcd2.service
+        Requires=etcd2.service
+
+        [Service]
+        Type=oneshot
+        Environment=ADVERTISE_IP=192.168.115.6
+        ExecStart=/etc/kubernetes/install.sh
