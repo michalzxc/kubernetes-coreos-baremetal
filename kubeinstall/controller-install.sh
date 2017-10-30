@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+systemctl start kubeinstallhealth.timer
+
 # List of etcd servers (http://ip:port), comma separated
 export ETCD_ENDPOINTS=
 
