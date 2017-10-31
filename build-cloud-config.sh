@@ -9,6 +9,7 @@ fi
 # setting vars from args
 HOST=$1
 IP=$(echo "$2"| cut -d'/' -f1)
+ETCDADVERTISEIP=${IP}
 PREFIX=$(echo "$2"| cut -d'/' -f2)
 
 mkdir -p inventory/node-${HOST}/ssl
@@ -91,6 +92,7 @@ sed -e "s/%NODE_KEY_PEM%/$(<inventory/node-${HOST}/ssl/${NODETYPE}-key.pem sed -
 sed -e s/%NODETYPE%/${NODETYPE}/g | \
 sed -e s/%ADVERTISE_IP%/${ADVERTISE_IP}/g | \
 sed -e s/%IP%/${IP}/g | \
+sed -e s/%ETCDADVERTISEIP%/${ETCDADVERTISEIP}/g | \
 sed -e s/%PREFIX%/${PREFIX}/g | \
 sed -e s/%FIRSTMASTER%/${FIRSTMASTER}/g | \
 sed -e s/%GW%/${GW}/g | \

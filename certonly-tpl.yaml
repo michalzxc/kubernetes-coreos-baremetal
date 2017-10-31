@@ -67,7 +67,7 @@ coreos:
         [Service]
         User=etcd
         Type=notify
-        Environment="ETCD_ADVERTISE_CLIENT_URLS=http://%IP%:2379"
+        Environment="ETCD_ADVERTISE_CLIENT_URLS=http://%ETCDADVERTISEIP%:2379"
         Environment="ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379"
         Environment="ETCD_LISTEN_PEER_URLS=http://%IP%:2380"
         Environment=ETCD_DATA_DIR=/var/lib/etcd2
