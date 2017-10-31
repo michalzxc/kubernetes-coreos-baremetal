@@ -284,17 +284,6 @@ EnvironmentFile=/etc/kubernetes/cni/docker_opts_cni.env
 EOF
     fi
 
-    local TEMPLATE=/etc/kubernetes/cni/docker_opts_cni.env
-    if [ ! -f $TEMPLATE ] || [ -z "$(cat $TEMPLATE)" ]; then
-        echo "TEMPLATE: $TEMPLATE"
-        mkdir -p $(dirname $TEMPLATE)
-        cat << EOF > $TEMPLATE
-DOCKER_OPT_BIP=""
-DOCKER_OPT_IPMASQ=""
-EOF
-
-    fi
-
     local TEMPLATE=/etc/kubernetes/cni/net.d/10-flannel.conf
     if [ "${USE_CALICO}" = "false" ] && [ ! -f "${TEMPLATE}" ]; then
         echo "TEMPLATE: $TEMPLATE"
@@ -330,8 +319,6 @@ systemctl enable flanneld; systemctl start flanneld
 
 systemctl enable kubelet; systemctl start kubelet
 
+sleep 60
 systemctl enable haproxy.service
 systemctl start haproxy.service
-
-sleep 60
-systemctl restart flanneld
