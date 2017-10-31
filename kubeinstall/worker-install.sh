@@ -285,7 +285,7 @@ EOF
     fi
 
     local TEMPLATE=/etc/kubernetes/cni/docker_opts_cni.env
-    if [ ! -f $TEMPLATE ]; then
+    if [ ! -f $TEMPLATE ] || [ -z "$(cat $TEMPLATE)" ]; then
         echo "TEMPLATE: $TEMPLATE"
         mkdir -p $(dirname $TEMPLATE)
         cat << EOF > $TEMPLATE

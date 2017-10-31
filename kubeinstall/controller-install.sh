@@ -152,6 +152,8 @@ ExecStart=/usr/lib/coreos/kubelet-wrapper \
   --require-kubeconfig=true \
   --register-schedulable=false \
   --container-runtime=${CONTAINER_RUNTIME} \
+  --network-plugin=cni \
+  --cni-conf-dir=/etc/kubernetes/cni/net.d \
   --rkt-path=/usr/bin/rkt \
   --rkt-stage1-image=coreos.com/rkt/stage1-coreos \
   --allow-privileged=true \
@@ -828,7 +830,7 @@ EOF
     fi
 
     local TEMPLATE=/etc/kubernetes/cni/docker_opts_cni.env
-    if [ ! -f $TEMPLATE ]; then
+    if [ ! -f $TEMPLATE ] || [ -z "$(cat $TEMPLATE)" ]; then
         echo "TEMPLATE: $TEMPLATE"
         mkdir -p $(dirname $TEMPLATE)
         cat << EOF > $TEMPLATE
