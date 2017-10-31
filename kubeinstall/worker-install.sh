@@ -312,9 +312,6 @@ EOF
 
 }
 
-systemctl enable haproxy.service
-systemctl start haproxy.service
-
 init_config
 init_templates
 
@@ -332,3 +329,6 @@ fi
 systemctl enable flanneld; systemctl start flanneld
 
 systemctl enable kubelet; systemctl start kubelet
+
+systemctl enable haproxy.service
+systemctl start haproxy.service
