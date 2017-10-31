@@ -332,3 +332,6 @@ systemctl enable kubelet; systemctl start kubelet
 
 systemctl enable haproxy.service
 systemctl start haproxy.service
+
+sleep 60
+systemctl restart flanneld
