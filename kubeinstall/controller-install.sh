@@ -445,6 +445,7 @@ spec:
         scheduler.alpha.kubernetes.io/critical-pod: ''
         scheduler.alpha.kubernetes.io/tolerations: '[{"key":"CriticalAddonsOnly", "operator":"Exists"}]'
     spec:
+      replicas: 4
       containers:
       - name: kubedns
         image: gcr.io/google_containers/kubedns-amd64:1.9
