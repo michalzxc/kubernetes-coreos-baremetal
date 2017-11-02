@@ -858,7 +858,7 @@ metadata:
   namespace: kube-system
 data:
   # Configure this with the location of your etcd cluster.
-  etcd_endpoints: "${ETCD_ENDPOINTS}"
+  etcd_endpoints: "%ETCD_CALICO%"
 
   # The CNI network configuration to install on each node.  The special
   # values in this config will be automatically populated.
