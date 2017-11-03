@@ -37,7 +37,7 @@ if [ ! -z "$(echo "$1"|grep "controller")" ]; then
 		echo $GW>inventory/gw
 		openssl genrsa -out ssl/accounts-key.pem 2048
 		IP=${IP} openssl req -new -key ssl/accounts-key.pem -out ssl/accounts-key.csr -subj "/CN=kube-apiserver" -config master-openssl.cnf
-		IP=${IP} openssl x509 -req -in -out ssl/accounts-key.csr  -CA ssl/ca.pem -CAkey ssl/ca-key.pem -CAcreateserial -out ssl/accounts.pem -days 3650 -extensions v3_req -extfile master-openssl.cnf
+		IP=${IP} openssl x509 -req -in ssl/accounts-key.csr  -CA ssl/ca.pem -CAkey ssl/ca-key.pem -CAcreateserial -out ssl/accounts.pem -days 3650 -extensions v3_req -extfile master-openssl.cnf
 	fi
 		ETCD_INITIAL_CLUSTER_STATE=new
 	echo "$1=http://${HOSTIP}:2380">>inventory/masters
