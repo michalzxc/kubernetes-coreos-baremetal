@@ -289,6 +289,9 @@ spec:
     - /hyperkube
     - apiserver
     - --bind-address=0.0.0.0
+    - --apiserver-count=3
+    - --token-auth-file=/srv/kubernetes/known_tokens.csv
+    - --basic-auth-file=/srv/kubernetes/basic_auth.csv
     - --etcd-servers=${ETCD_ENDPOINTS}
     - --allow-privileged=true
     - --service-cluster-ip-range=${SERVICE_IP_RANGE}
