@@ -290,8 +290,6 @@ spec:
     - apiserver
     - --bind-address=0.0.0.0
     - --apiserver-count=3
-    - --token-auth-file=/etc/kubernetes/known_tokens.csv
-    - --basic-auth-file=/etc/kubernetes/basic_auth.csv
     - --etcd-servers=${ETCD_ENDPOINTS}
     - --allow-privileged=true
     - --service-cluster-ip-range=${SERVICE_IP_RANGE}
