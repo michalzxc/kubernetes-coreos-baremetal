@@ -296,6 +296,7 @@ spec:
     - --insecure-port=8080
     - --storage-backend=etcd2
     - --advertise-address=${ADVERTISE_IP}
+    - --enable-bootstrap-token-auth
     - --admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota
     - --tls-cert-file=/etc/kubernetes/ssl/apiserver.pem
     - --tls-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem
