@@ -35,6 +35,9 @@ if [ ! -z "$(echo "$1"|grep "controller")" ]; then
 	if [ ! -f inventory/gw ]; then
 		GW=$3
 		echo $GW>inventory/gw
+		openssl genrsa -out ssl/accounts-key.pem 2048
+		openssl req -new -key ssl/accounts-key.pem -out ssl/accounts-key.csr -subj "/CN=kube-apiserver" -config master-openssl.cnf
+		openssl x509 -req -in -out ssl/accounts-key.csr  -CA ssl/ca.pem -CAkey ssl/ca-key.pem -CAcreateserial -out ssl/accounts.pem -days 3650 -extensions v3_req -extfile master-openssl.cnf
 	fi
 		ETCD_INITIAL_CLUSTER_STATE=new
 	echo "$1=http://${HOSTIP}:2380">>inventory/masters
@@ -89,6 +92,8 @@ sed -e "s/%INSTALL_SCRIPT%/$(<inventory/node-${HOST}/install.sh sed -e 's/\(.*\)
 sed -e "s/%CA_PEM%/$(<ssl/ca.pem sed -e 's/\(.*\)/      \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')/g" | \
 sed -e "s/%NODE_PEM%/$(<inventory/node-${HOST}/ssl/${NODETYPE}.pem sed -e 's/\(.*\)/      \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')/g" | \
 sed -e "s/%NODE_KEY_PEM%/$(<inventory/node-${HOST}/ssl/${NODETYPE}-key.pem sed -e 's/\(.*\)/      \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')/g" | \
+sed -e "s/%ACCOUNTS_PEM%/$(<ssl/accounts.pem sed -e 's/\(.*\)/      \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')/g" | \
+sed -e "s/%ACCOUNTS_KEY_PEM%/$(<ssl/accounts-key.pem sed -e 's/\(.*\)/      \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')/g" | \
 sed -e s/%NODETYPE%/${NODETYPE}/g | \
 sed -e s/%ADVERTISE_IP%/${ADVERTISE_IP}/g | \
 sed -e s/%IP%/${IP}/g | \

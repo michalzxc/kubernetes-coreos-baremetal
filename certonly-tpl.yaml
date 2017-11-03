@@ -37,6 +37,16 @@ write_files:
     permissions: 0600
     content: |
 %NODE_KEY_PEM%
+  - path: /etc/kubernetes/ssl/accounts.pem
+    owner: "root"
+    permissions: 0600
+    content: |
+%ACCOUNTS_PEM%
+  - path: /etc/kubernetes/ssl/accounts-key.pem
+    owner: "root"
+    permissions: 0600
+    content: |
+%ACCOUNTS_KEY_PEM%
   - path: /etc/kubernetes/cni/docker_opts_cni.env
 coreos:
   units:

@@ -301,7 +301,7 @@ spec:
     - --tls-cert-file=/etc/kubernetes/ssl/apiserver.pem
     - --tls-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem
     - --client-ca-file=/etc/kubernetes/ssl/ca.pem
-    - --service-account-key-file=/etc/kubernetes/ssl/apiserver-key.pem
+    - --service-account-key-file=/etc/kubernetes/ssl/accounts.pem
     - --runtime-config=extensions/v1beta1/networkpolicies=true
     - --anonymous-auth=false
     livenessProbe:
@@ -354,7 +354,7 @@ spec:
     - controller-manager
     - --master=http://127.0.0.1:8080
     - --leader-elect=true
-    - --service-account-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem
+    - --service-account-private-key-file=/etc/kubernetes/ssl/accounts-key.pem
     - --root-ca-file=/etc/kubernetes/ssl/ca.pem
     resources:
       requests:
