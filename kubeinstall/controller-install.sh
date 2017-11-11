@@ -1,11 +1,13 @@
 #!/bin/bash
 set -e
 
+systemctl start kubeinstallhealth.timer
+
 # List of etcd servers (http://ip:port), comma separated
 export ETCD_ENDPOINTS=
 
 # Specify the version (vX.Y.Z) of Kubernetes assets to deploy
-export K8S_VER=v1.5.4_coreos.0
+export K8S_VER=v1.7.8_coreos.2
 
 # Hyperkube image repository to use.
 export HYPERKUBE_IMAGE_REPO=quay.io/coreos/hyperkube
@@ -92,6 +94,33 @@ function init_flannel {
 }
 
 function init_templates {
+
+  local TEMPLATE=/etc/kubernetes/master-kubeconfig.yaml
+  if [ ! -f $TEMPLATE ]; then
+      echo "TEMPLATE: $TEMPLATE"
+      mkdir -p $(dirname $TEMPLATE)
+      cat << EOF > $TEMPLATE
+apiVersion: v1
+kind: Config
+clusters:
+- name: local
+  cluster:
+    certificate-authority: /etc/kubernetes/ssl/ca.pem
+    server: http://127.0.0.1:8080
+users:
+- name: kubelet
+  user:
+    client-certificate: /etc/kubernetes/ssl/apiserver.pem
+    client-key: /etc/kubernetes/ssl/apiserver-key.pem
+contexts:
+- context:
+    cluster: local
+    user: kubelet
+  name: kubelet-context
+current-context: kubelet-context
+EOF
+  fi
+
     local TEMPLATE=/etc/systemd/system/kubelet.service
     local uuid_file="/var/run/kubelet-pod.uuid"
     if [ ! -f $TEMPLATE ]; then
@@ -118,11 +147,13 @@ ExecStartPre=/usr/bin/mkdir -p /opt/cni/bin
 ExecStartPre=/usr/bin/mkdir -p /var/log/containers
 ExecStartPre=-/usr/bin/rkt rm --uuid-file=${uuid_file}
 ExecStart=/usr/lib/coreos/kubelet-wrapper \
-  --api-servers=http://127.0.0.1:8080 \
+  --kubeconfig /etc/kubernetes/master-kubeconfig.yaml \
+  --hostname-override=%HOST% \
+  --require-kubeconfig=true \
   --register-schedulable=false \
-  --cni-conf-dir=/etc/kubernetes/cni/net.d \
-  --network-plugin=cni \
   --container-runtime=${CONTAINER_RUNTIME} \
+  --network-plugin=cni \
+  --cni-conf-dir=/etc/kubernetes/cni/net.d \
   --rkt-path=/usr/bin/rkt \
   --rkt-stage1-image=coreos.com/rkt/stage1-coreos \
   --allow-privileged=true \
@@ -258,16 +289,19 @@ spec:
     - /hyperkube
     - apiserver
     - --bind-address=0.0.0.0
+    - --apiserver-count=3
     - --etcd-servers=${ETCD_ENDPOINTS}
     - --allow-privileged=true
     - --service-cluster-ip-range=${SERVICE_IP_RANGE}
     - --secure-port=443
+    - --insecure-port=8080
+    - --storage-backend=etcd2
     - --advertise-address=${ADVERTISE_IP}
     - --admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota
     - --tls-cert-file=/etc/kubernetes/ssl/apiserver.pem
     - --tls-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem
     - --client-ca-file=/etc/kubernetes/ssl/ca.pem
-    - --service-account-key-file=/etc/kubernetes/ssl/apiserver-key.pem
+    - --service-account-key-file=/etc/kubernetes/ssl/accounts.pem
     - --runtime-config=extensions/v1beta1/networkpolicies=true
     - --anonymous-auth=false
     livenessProbe:
@@ -320,7 +354,7 @@ spec:
     - controller-manager
     - --master=http://127.0.0.1:8080
     - --leader-elect=true
-    - --service-account-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem
+    - --service-account-private-key-file=/etc/kubernetes/ssl/accounts-key.pem
     - --root-ca-file=/etc/kubernetes/ssl/ca.pem
     resources:
       requests:
@@ -412,6 +446,7 @@ spec:
         scheduler.alpha.kubernetes.io/critical-pod: ''
         scheduler.alpha.kubernetes.io/tolerations: '[{"key":"CriticalAddonsOnly", "operator":"Exists"}]'
     spec:
+      replicas: 4
       containers:
       - name: kubedns
         image: gcr.io/google_containers/kubedns-amd64:1.9
@@ -796,16 +831,6 @@ EnvironmentFile=/etc/kubernetes/cni/docker_opts_cni.env
 EOF
     fi
 
-    local TEMPLATE=/etc/kubernetes/cni/docker_opts_cni.env
-    if [ ! -f $TEMPLATE ]; then
-        echo "TEMPLATE: $TEMPLATE"
-        mkdir -p $(dirname $TEMPLATE)
-        cat << EOF > $TEMPLATE
-DOCKER_OPT_BIP=""
-DOCKER_OPT_IPMASQ=""
-EOF
-    fi
-
     local TEMPLATE=/etc/kubernetes/cni/net.d/10-flannel.conf
     if [ "${USE_CALICO}" = "false" ] && [ ! -f "${TEMPLATE}" ]; then
         echo "TEMPLATE: $TEMPLATE"
@@ -830,11 +855,11 @@ EOF
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: calico-config 
+  name: calico-config
   namespace: kube-system
 data:
   # Configure this with the location of your etcd cluster.
-  etcd_endpoints: "${ETCD_ENDPOINTS}"
+  etcd_endpoints: "%ETCD_CALICO%"
 
   # The CNI network configuration to install on each node.  The special
   # values in this config will be automatically populated.
@@ -860,7 +885,7 @@ data:
 ---
 
 # This manifest installs the calico/node container, as well
-# as the Calico CNI plugins and network config on 
+# as the Calico CNI plugins and network config on
 # each master and worker node in a Kubernetes cluster.
 kind: DaemonSet
 apiVersion: extensions/v1beta1
@@ -885,11 +910,11 @@ spec:
     spec:
       hostNetwork: true
       containers:
-        # Runs calico/node container on each Kubernetes node.  This 
+        # Runs calico/node container on each Kubernetes node.  This
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: quay.io/calico/node:v0.23.0
+          image: quay.io/calico/node:v2.6.1-46-g1e5a93a
           env:
             # The location of the Calico etcd cluster.
             - name: ETCD_ENDPOINTS
@@ -897,7 +922,7 @@ spec:
                 configMapKeyRef:
                   name: calico-config
                   key: etcd_endpoints
-            # Choose the backend to use. 
+            # Choose the backend to use.
             - name: CALICO_NETWORKING_BACKEND
               value: "none"
             # Disable file logging so 'kubectl logs' works.
@@ -920,7 +945,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: quay.io/calico/cni:v1.5.2
+          image: quay.io/calico/cni:v1.10.0-36-gc7960b8
           imagePullPolicy: Always
           command: ["/install-cni.sh"]
           env:
@@ -968,7 +993,7 @@ spec:
 # This manifest deploys the Calico policy controller on Kubernetes.
 # See https://github.com/projectcalico/k8s-policy
 apiVersion: extensions/v1beta1
-kind: ReplicaSet 
+kind: ReplicaSet
 metadata:
   name: calico-policy-controller
   namespace: kube-system
@@ -1006,7 +1031,7 @@ spec:
             # service for API access.
             - name: K8S_API
               value: "https://kubernetes.default:443"
-            # Since we're running in the host namespace and might not have KubeDNS 
+            # Since we're running in the host namespace and might not have KubeDNS
             # access, configure the container's /etc/hosts to resolve
             # kubernetes.default to the correct service clusterIP.
             - name: CONFIGURE_ETC_HOSTS
