@@ -241,6 +241,8 @@ metadata:
   namespace: kube-system
   annotations:
     rkt.alpha.kubernetes.io/stage1-name-override: coreos.com/rkt/stage1-fly
+  labels:
+    k8s-app: kube-scheduler
 spec:
   hostNetwork: true
   containers:
@@ -345,6 +347,8 @@ kind: Pod
 metadata:
   name: kube-controller-manager
   namespace: kube-system
+  labels:
+    k8s-app: kube-controller-manager
 spec:
   containers:
   - name: kube-controller-manager
