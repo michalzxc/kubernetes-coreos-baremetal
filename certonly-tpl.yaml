@@ -56,15 +56,7 @@ coreos:
     - name: locksmithd.service
       mask: true
       command: stop
-    - name: 00-%HOST%.network
-      content: |
-        [Match]
-        Name=eth0
-
-        [Network]
-        Address=%HOSTIP%/%PREFIX%
-        Gateway=%GW%
-        DNS=8.8.8.8
+%NETSECTION%
     - name: fleet.service
       command: start
     - name: etcd2.service

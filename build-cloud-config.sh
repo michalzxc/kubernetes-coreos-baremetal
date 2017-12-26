@@ -84,6 +84,27 @@ sed -e "s/CONTROLLER_ENDPOINT=/CONTROLLER_ENDPOINT=http:\/\/127.0.0.1:8182/g" > 
 mv inventory/node-${HOST}/installtmp.sh inventory/node-${HOST}/install.sh
 
 GW="$(cat inventory/gw)"
+if [ $GW!="dhcp"]; then
+$conf="	- name: 00-%HOST%.network
+		content: |
+			[Match]
+			Name=eth0
+
+			[Network]
+			Address=%HOSTIP%/%PREFIX%
+			Gateway=%GW%
+			DNS=8.8.8.8"
+else
+	$conf="	- name: 00-%HOST%.network
+			content: |
+				[Match]
+				Name=eth0
+
+				[Network]
+				DHCP=yes
+				DNS=8.8.8.8"
+fi
+sed -i "s/%NETSECTION%/$conf/g" certonly-tpl.yaml
 # bash templating
 rm -f inventory/node-${HOST}/cloud-config/openstack/latest/user_data
 cat certonly-tpl.yaml | \
