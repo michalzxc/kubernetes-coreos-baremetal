@@ -87,26 +87,24 @@ GW="$(cat inventory/gw)"
 if [ $GW!="dhcp" ]; then
 netconf=$(cat << EOF
 - name: 00-%HOST%.network
-		content: |
-			[Match]
+  content: |
+    [Match]
 			Name=eth0
-
-			[Network]
-			Address=%HOSTIP%/%PREFIX%
-			Gateway=%GW%
-			DNS=8.8.8.8
+      [Network]
+      Address=%HOSTIP%/%PREFIX%
+      Gateway=%GW%
+      DNS=8.8.8.8
 EOF
 )
 else
 netconf=$(cat << EOF
-	- name: 00-%HOST%.network
-			content: |
-				[Match]
-				Name=eth0
-
-				[Network]
-				DHCP=yes
-				DNS=8.8.8.8
+- name: 00-%HOST%.network
+  content: |
+    [Match]
+    Name=eth0
+    [Network]
+    DHCP=yes
+    DNS=8.8.8.8
 EOF
 )
 fi
