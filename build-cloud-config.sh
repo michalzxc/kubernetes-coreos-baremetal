@@ -84,7 +84,7 @@ sed -e "s/CONTROLLER_ENDPOINT=/CONTROLLER_ENDPOINT=http:\/\/127.0.0.1:8182/g" > 
 mv inventory/node-${HOST}/installtmp.sh inventory/node-${HOST}/install.sh
 
 GW="$(cat inventory/gw)"
-if [ $GW!="dhcp" ]; then
+if [ -z "$(echo "$GW"| grep "dhcp")" ]; then
 netconf=$(cat << EOF
 - name: 00-%HOST%.network
   content: |
@@ -102,7 +102,7 @@ netconf=$(cat << EOF
   content: |
 	  [Match]
 	  Name=eth0
-	  [Network] 
+	  [Network]
     DHCP=yes
     DNS=8.8.8.8
 EOF
