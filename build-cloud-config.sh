@@ -110,11 +110,11 @@ netconf=$(cat << EOF
 EOF
 )
 fi
-netconf=$(echo "$netconf"|sed -e 's/\(.*\)/      \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')/g")
-cat certonly-tpl.yaml | sed -e "s/%NETSECTION%/$netconf/g" >  certonly-tpl2.yaml
+netconf=$(echo "$netconf"|sed -e 's/\(.*\)/      \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')
+cat certonly-tpl.yaml | sed -e "s/%NETSECTION%/$netconf/g" >  certonly-tpl.yaml2
 # bash templating
 rm -f inventory/node-${HOST}/cloud-config/openstack/latest/user_data
-cat certonly-tpl.yaml | \
+cat certonly-tpl.yaml2 | \
 sed -e s/%HOST%/${HOST}/g | \
 sed -e "s/%INSTALL_SCRIPT%/$(<inventory/node-${HOST}/install.sh sed -e 's/\(.*\)/      \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')/g" | \
 sed -e "s/%CA_PEM%/$(<ssl/ca.pem sed -e 's/\(.*\)/      \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')/g" | \
