@@ -85,7 +85,7 @@ mv inventory/node-${HOST}/installtmp.sh inventory/node-${HOST}/install.sh
 
 GW="$(cat inventory/gw)"
 if [ $GW!="dhcp" ]; then
-conf=$(cat << EOF
+netconf=$(cat << EOF
 - name: 00-%HOST%.network
 		content: |
 			[Match]
@@ -98,7 +98,7 @@ conf=$(cat << EOF
 EOF
 )
 else
-conf=$(cat << EOF
+netconf=$(cat << EOF
 	- name: 00-%HOST%.network
 			content: |
 				[Match]
@@ -110,7 +110,8 @@ conf=$(cat << EOF
 EOF
 )
 fi
-cat certonly-tpl.yaml | sed -e "s/%NETSECTION%/$(echo "$conf"|sed -e 's/\(.*\)/      \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')/g")/g" >  certonly-tpl2.yaml
+netconf=$(echo "$netconf"|sed -e 's/\(.*\)/      \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')/g")
+cat certonly-tpl.yaml | sed -e "s/%NETSECTION%/$netconf/g" >  certonly-tpl2.yaml
 # bash templating
 rm -f inventory/node-${HOST}/cloud-config/openstack/latest/user_data
 cat certonly-tpl.yaml | \
