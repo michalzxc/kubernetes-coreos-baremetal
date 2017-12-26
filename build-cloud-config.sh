@@ -110,7 +110,7 @@ conf=$(cat << EOF
 EOF
 )
 fi
-sed -ie "s/%NETSECTION%/$(echo "$conf"|sed -e 's/\(.*\)/      \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')/g")/g" certonly-tpl.yaml
+cat certonly-tpl.yaml | sed -e "s/%NETSECTION%/$(echo "$conf"|sed -e 's/\(.*\)/      \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')/g")/g" >  certonly-tpl2.yaml
 # bash templating
 rm -f inventory/node-${HOST}/cloud-config/openstack/latest/user_data
 cat certonly-tpl.yaml | \
