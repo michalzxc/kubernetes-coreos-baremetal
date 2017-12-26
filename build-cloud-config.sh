@@ -85,7 +85,8 @@ mv inventory/node-${HOST}/installtmp.sh inventory/node-${HOST}/install.sh
 
 GW="$(cat inventory/gw)"
 if [ $GW!="dhcp" ]; then
-$conf="	- name: 00-%HOST%.network
+cat << EOF > $conf
+- name: 00-%HOST%.network
 		content: |
 			[Match]
 			Name=eth0
@@ -93,16 +94,19 @@ $conf="	- name: 00-%HOST%.network
 			[Network]
 			Address=%HOSTIP%/%PREFIX%
 			Gateway=%GW%
-			DNS=8.8.8.8"
+			DNS=8.8.8.8
+EOF
 else
-	$conf="	- name: 00-%HOST%.network
+cat << EOF > $conf
+	- name: 00-%HOST%.network
 			content: |
 				[Match]
 				Name=eth0
 
 				[Network]
 				DHCP=yes
-				DNS=8.8.8.8"
+				DNS=8.8.8.8
+EOF
 fi
 sed -i "s/%NETSECTION%/$(echo "$conf"|sed -e 's/\(.*\)/      \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')/g")/g" certonly-tpl.yaml
 # bash templating
