@@ -115,19 +115,17 @@ if [ -f cloudconf-openstack ]; then
 netenv="$(cat cloudconf-openstack)"
 cloudconf=$(cat << EOF
 - name: openstackhosts.service
-	enable: true
-	content: |
-		[Unit]
-		Description=OpenStack Hostsfile Updated
-		After=docker.service
-		Requires=docker.service
-
-		[Service]
-		ExecStart=/usr/bin/docker run --rm %NETENV% --name openstackhosts --cap-add=SYS_ADMIN --cap-add DAC_READ_SEARCH --tmpfs /run --tmpfs /run/lock -v /sys/fs/cgroup:/sys/fs/cgroup:ro -v /etc/hosts:/etc/hosts:rw michalzxc/openstackhosts
-		ExecStop=/usr/bin/docker stop openstackhosts
-
-		[Install]
-		WantedBy=multi-user.target
+  enable: true
+  content: |
+    [Unit]
+    Description=OpenStack Hostsfile Updated
+    After=docker.service
+    Requires=docker.service
+    [Service]
+    ExecStart=/usr/bin/docker run --rm %NETENV% --name openstackhosts --cap-add=SYS_ADMIN --cap-add DAC_READ_SEARCH --tmpfs /run --tmpfs /run/lock -v /sys/fs/cgroup:/sys/fs/cgroup:ro -v /etc/hosts:/etc/hosts:rw michalzxc/openstackhosts
+    ExecStop=/usr/bin/docker stop openstackhosts
+    [Install]
+    WantedBy=multi-user.target
 EOF
 )
 	cloudconf="$(echo -e "$cloudconf"|sed -e "s@%NETENV%@$netenv@g")"
