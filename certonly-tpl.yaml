@@ -59,6 +59,7 @@ coreos:
 %NETSECTION%
     - name: fleet.service
       command: start
+%CLOUDSECTION%
     - name: etcd2.service
       command: start
       enable: true

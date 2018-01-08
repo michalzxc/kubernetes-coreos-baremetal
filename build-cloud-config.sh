@@ -110,9 +110,36 @@ EOF
 fi
 netconf=$(echo "$netconf"|sed -e 's/\(.*\)/      \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')
 cat certonly-tpl.yaml | sed -e "s/%NETSECTION%/$netconf/g" >  certonly-tpl.yaml2
+###OpenStack DNS
+if [ -f cloudconf-openstack ]; then
+netenv="$(cat cloudconf-openstack)"
+cloudconf=$(cat << EOF
+- name: openstackhosts.service
+	enable: true
+	content: |
+		[Unit]
+		Description=OpenStack Hostsfile Updated
+		After=docker.service
+		Requires=docker.service
+
+		[Service]
+		ExecStart=/usr/bin/docker run --rm %NETENV% --name openstackhosts --cap-add=SYS_ADMIN --cap-add DAC_READ_SEARCH --tmpfs /run --tmpfs /run/lock -v /sys/fs/cgroup:/sys/fs/cgroup:ro -v /etc/hosts:/etc/hosts:rw michalzxc/openstackhosts
+		ExecStop=/usr/bin/docker stop openstackhosts
+
+		[Install]
+		WantedBy=multi-user.target
+EOF
+)
+	cloudconf="$(echo -e "$cloudconf"|sed -e "s/%NETENV%/$netenv/g")"
+	cloudconf=$(echo "$cloudconf"|sed -e 's/\(.*\)/      \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')
+else
+	cloudconf=""
+fi
+cat certonly-tpl.yaml2 | sed -e "s/%CLOUDSECTION%/$cloudconf/g" >  certonly-tpl.yaml3
+
 # bash templating
 rm -f inventory/node-${HOST}/cloud-config/openstack/latest/user_data
-cat certonly-tpl.yaml2 | \
+cat certonly-tpl.yaml3 | \
 sed -e s/%HOST%/${HOST}/g | \
 sed -e "s/%INSTALL_SCRIPT%/$(<inventory/node-${HOST}/install.sh sed -e 's/\(.*\)/      \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')/g" | \
 sed -e "s/%CA_PEM%/$(<ssl/ca.pem sed -e 's/\(.*\)/      \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')/g" | \
