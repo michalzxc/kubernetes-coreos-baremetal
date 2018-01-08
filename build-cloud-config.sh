@@ -72,6 +72,9 @@ else
 fi
 
 HAPROXYAPI="$(cat inventory/masters|egrep -o "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"|awk '{print $1":443"}'|xargs)"
+if [ -z "$(echo $HAPROXYAPI)" ]; then
+	HAPROXYAPI="$(cat inventory/masters|awk -F'=' '{print $2}'|sed 's/http:\/\///g'|awk -F':' '{print $1":443"}'|xargs)"
+fi
 
 # create cloud config folder
 rm -f inventory/node-${HOST}/install.sh
