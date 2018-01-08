@@ -36,8 +36,13 @@ if [ ! -z "$(echo "$1"|grep "controller")" ]; then
 		GW=$3
 		echo $GW>inventory/gw
 		openssl genrsa -out ssl/accounts-key.pem 2048
-		IP=${IP} openssl req -new -key ssl/accounts-key.pem -out ssl/accounts-key.csr -subj "/CN=kube-apiserver" -config master-openssl.cnf
-		IP=${IP} openssl x509 -req -in ssl/accounts-key.csr  -CA ssl/ca.pem -CAkey ssl/ca-key.pem -CAcreateserial -out ssl/accounts.pem -days 3650 -extensions v3_req -extfile master-openssl.cnf
+		if [ ! -z "$(echo "$IP"|egrep -o "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+")" ]; then
+			IP=${IP} openssl req -new -key ssl/accounts-key.pem -out ssl/accounts-key.csr -subj "/CN=kube-apiserver" -config master-openssl.cnf
+			IP=${IP} openssl x509 -req -in ssl/accounts-key.csr  -CA ssl/ca.pem -CAkey ssl/ca-key.pem -CAcreateserial -out ssl/accounts.pem -days 3650 -extensions v3_req -extfile master-openssl.cnf
+		else
+			CNAME=${IP} openssl req -new -key ssl/accounts-key.pem -out ssl/accounts-key.csr -subj "/CN=kube-apiserver" -config master-opensslcname.cnf
+			CNAME=${IP} openssl x509 -req -in ssl/accounts-key.csr  -CA ssl/ca.pem -CAkey ssl/ca-key.pem -CAcreateserial -out ssl/accounts.pem -days 3650 -extensions v3_req -extfile master-opensslcname.cnf
+		fi
 	fi
 		ETCD_INITIAL_CLUSTER_STATE=new
 	echo "$1=http://${HOSTIP}:2380">>inventory/masters
@@ -46,8 +51,13 @@ if [ ! -z "$(echo "$1"|grep "controller")" ]; then
 	NOETCDCLUSTER=0
 
 	openssl genrsa -out inventory/node-${HOST}/ssl/apiserver-key.pem 2048
-	IP=${IP} openssl req -new -key inventory/node-${HOST}/ssl/apiserver-key.pem -out inventory/node-${HOST}/ssl/apiserver.csr -subj "/CN=kube-apiserver" -config master-openssl.cnf
-	IP=${IP} openssl x509 -req -in inventory/node-${HOST}/ssl/apiserver.csr -CA ssl/ca.pem -CAkey ssl/ca-key.pem -CAcreateserial -out inventory/node-${HOST}/ssl/apiserver.pem -days 3650 -extensions v3_req -extfile master-openssl.cnf
+	if [ ! -z "$(echo "$IP"|egrep -o "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+")" ]; then
+		IP=${IP} openssl req -new -key inventory/node-${HOST}/ssl/apiserver-key.pem -out inventory/node-${HOST}/ssl/apiserver.csr -subj "/CN=kube-apiserver" -config master-openssl.cnf
+		IP=${IP} openssl x509 -req -in inventory/node-${HOST}/ssl/apiserver.csr -CA ssl/ca.pem -CAkey ssl/ca-key.pem -CAcreateserial -out inventory/node-${HOST}/ssl/apiserver.pem -days 3650 -extensions v3_req -extfile master-openssl.cnf
+	else
+		CNAME=${IP} openssl req -new -key inventory/node-${HOST}/ssl/apiserver-key.pem -out inventory/node-${HOST}/ssl/apiserver.csr -subj "/CN=kube-apiserver" -config master-opensslcname.cnf
+		CNAME=${IP} openssl x509 -req -in inventory/node-${HOST}/ssl/apiserver.csr -CA ssl/ca.pem -CAkey ssl/ca-key.pem -CAcreateserial -out inventory/node-${HOST}/ssl/apiserver.pem -days 3650 -extensions v3_req -extfile master-opensslcname.cnf
+	fi
 	echo "$HOSTIP/$PREFIX" > inventory/node-${HOST}/ip
 	echo "creating CoreOS cloud-config for controller ${HOST}(${IP})"
 	ENDPOINTS="http://${IP}:2379"
@@ -61,8 +71,13 @@ else
 	NOETCDCLUSTER=1
 
 	openssl genrsa -out inventory/node-${HOST}/ssl/worker-key.pem 2048
-	WORKER_IP=${IP} openssl req -new -key inventory/node-${HOST}/ssl/worker-key.pem -out inventory/node-${HOST}/ssl/worker.csr -subj "/CN=${HOST}" -config worker-openssl.cnf
-	WORKER_IP=${IP} openssl x509 -req -in inventory/node-${HOST}/ssl/worker.csr -CA ssl/ca.pem -CAkey ssl/ca-key.pem -CAcreateserial -out inventory/node-${HOST}/ssl/worker.pem -days 3650 -extensions v3_req -extfile worker-openssl.cnf
+	if [ ! -z "$(echo "$IP"|egrep -o "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+")" ]; then
+		WORKER_IP=${IP} openssl req -new -key inventory/node-${HOST}/ssl/worker-key.pem -out inventory/node-${HOST}/ssl/worker.csr -subj "/CN=${HOST}" -config worker-openssl.cnf
+		WORKER_IP=${IP} openssl x509 -req -in inventory/node-${HOST}/ssl/worker.csr -CA ssl/ca.pem -CAkey ssl/ca-key.pem -CAcreateserial -out inventory/node-${HOST}/ssl/worker.pem -days 3650 -extensions v3_req -extfile worker-openssl.cnf
+	else
+		WORKER_CNAME=${IP} openssl req -new -key inventory/node-${HOST}/ssl/worker-key.pem -out inventory/node-${HOST}/ssl/worker.csr -subj "/CN=${HOST}" -config worker-opensslcname.cnf
+		WORKER_CNAME=${IP} openssl x509 -req -in inventory/node-${HOST}/ssl/worker.csr -CA ssl/ca.pem -CAkey ssl/ca-key.pem -CAcreateserial -out inventory/node-${HOST}/ssl/worker.pem -days 3650 -extensions v3_req -extfile worker-opensslcname.cnf
+	fi
 	echo "$HOSTIP/$PREFIX" > inventory/node-${HOST}/ip
 	echo "creating CoreOS cloud-config for $HOST with K8S version $K8S_VER to join $MASTER"
 	IP=${MASTER} # for etcd2 config
