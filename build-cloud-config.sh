@@ -130,7 +130,7 @@ cloudconf=$(cat << EOF
 		WantedBy=multi-user.target
 EOF
 )
-	cloudconf="$(echo -e "$cloudconf"|sed -e "s/%NETENV%/$netenv/g")"
+	cloudconf="$(echo -e "$cloudconf"|sed -e "s@%NETENV%@$netenv@g")"
 	cloudconf=$(echo "$cloudconf"|sed -e 's/\(.*\)/    \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')
 else
 	cloudconf=""
