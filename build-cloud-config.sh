@@ -108,7 +108,7 @@ netconf=$(cat << EOF
 EOF
 )
 fi
-netconf=$(echo "$netconf"|sed -e 's/\(.*\)/    \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')
+netconf=$(echo "$netconf"|sed -e 's/\(.*\)/    \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n'| sed -e 's/\\n$//)
 cat certonly-tpl.yaml | sed -e "s/%NETSECTION%/$netconf/g" >  certonly-tpl.yaml2
 ###OpenStack DNS
 if [ -f cloudconf-openstack ]; then
@@ -129,7 +129,7 @@ cloudconf=$(cat << EOF
 EOF
 )
 	cloudconf="$(echo -e "$cloudconf"|sed -e "s@%NETENV%@$netenv@g")"
-	cloudconf=$(echo "$cloudconf"|sed -e 's/\(.*\)/    \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')
+	cloudconf=$(echo "$cloudconf"|sed -e 's/\(.*\)/    \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n'| sed -e 's/\\n$//')
 else
 	cloudconf=""
 fi
