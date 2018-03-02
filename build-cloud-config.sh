@@ -140,7 +140,7 @@ cloudconf=$(cat << EOF
     After=docker.service
     Requires=docker.service
     [Service]
-    ExecStart=/usr/bin/docker run --rm %NETENV% --name openstackhosts -p 127.0.0.1:53:53/udp --dns=8.8.8.8 --cap-add=SYS_ADMIN --cap-add DAC_READ_SEARCH --tmpfs /run --tmpfs /run/lock -v /sys/fs/cgroup:/sys/fs/cgroup:ro michalzxc/openstackhosts
+    ExecStart=/usr/bin/docker run --rm %NETENV% --name openstackhosts --cap-add=SYS_ADMIN --cap-add DAC_READ_SEARCH --tmpfs /run --tmpfs /run/lock -v /sys/fs/cgroup:/sys/fs/cgroup:ro -v /etc/hosts:/etc/hosts:rw michalzxc/openstackhosts
     ExecStop=/usr/bin/docker stop openstackhosts
     [Install]
     WantedBy=multi-user.target
