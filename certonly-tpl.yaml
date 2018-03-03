@@ -47,6 +47,25 @@ write_files:
     permissions: 0600
     content: |
 %ACCOUNTS_KEY_PEM%
+  - path: /etc/nsswitch.conf
+    owner: "root"
+    permissions: 0644
+    content: |
+      # /etc/nsswitch.conf:
+      passwd:      files usrfiles
+      shadow:      files usrfiles
+      group:       files usrfiles
+      hosts:       files usrfiles resolve dns
+      networks:    files usrfiles dns
+      services:    files usrfiles
+      protocols:   files usrfiles
+      rpc:         files usrfiles
+      ethers:      files
+      netmasks:    files
+      netgroup:    files
+      bootparams:  files
+      automount:   files
+      aliases:     files
   - path: /etc/kubernetes/cni/docker_opts_cni.env
 coreos:
   units:
