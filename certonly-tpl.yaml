@@ -67,10 +67,10 @@ write_files:
       automount:   files
       aliases:     files
   - path: /etc/modules-load.d/iscsi_tcp.conf
-    filesystem: root
-    mode: 0644
-    contents:
-      inline: iscsi_tcp
+    owner: "root"
+    permissions: 0644
+    content: |
+      iscsi_tcp
   - path: /etc/kubernetes/cni/docker_opts_cni.env
 coreos:
   units:
