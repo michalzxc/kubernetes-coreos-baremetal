@@ -85,6 +85,12 @@ Environment="RKT_RUN_ARGS=--uuid-file-save=${uuid_file} \
   --mount volume=stage,target=/tmp \
   --volume var-log,kind=host,source=/var/log \
   --mount volume=var-log,target=/var/log \
+  --volume iscsiadm,kind=host,source=/usr/sbin/iscsiadm \
+  --mount volume=iscsiadm,target=/usr/sbin/iscsiadm \
+  --volume etc-scsi,kind=host,source=/etc/iscsi/ \
+  --mount volume=etc-scsi,target=/etc/iscsi \
+  --volume iscsid,kind=host,source=/usr/sbin/iscsid \
+  --mount volume=iscsid,target=/usr/sbin/iscsid \
   ${CALICO_OPTS}"
 ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
 ExecStartPre=/usr/bin/mkdir -p /var/log/containers
