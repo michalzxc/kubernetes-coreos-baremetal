@@ -66,6 +66,11 @@ write_files:
       bootparams:  files
       automount:   files
       aliases:     files
+  - path: /etc/modules-load.d/iscsi_tcp.conf
+    filesystem: root
+    mode: 0644
+    contents:
+      inline: iscsi_tcp
   - path: /etc/kubernetes/cni/docker_opts_cni.env
 coreos:
   units:
@@ -74,6 +79,7 @@ coreos:
       command: stop
     - name: iscsid.service
       enable: true
+      command: start
     - name: locksmithd.service
       mask: true
       command: stop
