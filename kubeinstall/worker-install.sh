@@ -307,6 +307,8 @@ EOF
 
 }
 
+modprobe iscsi_tcp
+
 init_config
 init_templates
 
