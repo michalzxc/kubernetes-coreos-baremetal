@@ -141,6 +141,12 @@ Environment="RKT_RUN_ARGS=--uuid-file-save=${uuid_file} \
   --mount volume=stage,target=/tmp \
   --volume var-log,kind=host,source=/var/log \
   --mount volume=var-log,target=/var/log \
+  --volume iscsiadm,kind=host,source=/usr/sbin/iscsiadm \
+  --mount volume=iscsiadm,target=/usr/sbin/iscsiadm \
+  --volume etc-scsi,kind=host,source=/etc/iscsi/ \
+  --mount volume=etc-scsi,target=/etc/iscsi \
+  --volume iscsid,kind=host,source=/usr/sbin/iscsid \
+  --mount volume=iscsid,target=/usr/sbin/iscsid \
   ${CALICO_OPTS}"
 ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
 ExecStartPre=/usr/bin/mkdir -p /opt/cni/bin
@@ -1078,6 +1084,8 @@ function start_calico {
     #TODO: change to rkt once this is resolved (https://github.com/coreos/rkt/issues/3181)
     docker run --rm --net=host -v /srv/kubernetes/manifests:/host/manifests $HYPERKUBE_IMAGE_REPO:$K8S_VER /hyperkube kubectl apply -f /host/manifests/calico.yaml
 }
+
+modprobe iscsi_tcp
 
 init_config
 init_templates

@@ -47,26 +47,46 @@ write_files:
     permissions: 0600
     content: |
 %ACCOUNTS_KEY_PEM%
+  - path: /etc/nsswitch.conf
+    owner: "root"
+    permissions: 0644
+    content: |
+      # /etc/nsswitch.conf:
+      passwd:      files usrfiles
+      shadow:      files usrfiles
+      group:       files usrfiles
+      hosts:       files usrfiles resolve dns
+      networks:    files usrfiles dns
+      services:    files usrfiles
+      protocols:   files usrfiles
+      rpc:         files usrfiles
+      ethers:      files
+      netmasks:    files
+      netgroup:    files
+      bootparams:  files
+      automount:   files
+      aliases:     files
+  - path: /etc/modules-load.d/iscsi.conf
+    owner: "root"
+    permissions: 0644
+    content: |
+      iscsi_tcp
   - path: /etc/kubernetes/cni/docker_opts_cni.env
 coreos:
   units:
     - name: update-engine.service
       mask: true
       command: stop
+    - name: iscsid.service
+      enable: true
+      command: start
     - name: locksmithd.service
       mask: true
       command: stop
-    - name: 00-%HOST%.network
-      content: |
-        [Match]
-        Name=eth0
-
-        [Network]
-        Address=%HOSTIP%/%PREFIX%
-        Gateway=%GW%
-        DNS=8.8.8.8
+%NETSECTION%
     - name: fleet.service
       command: start
+%CLOUDSECTION%
     - name: etcd2.service
       command: start
       enable: true
