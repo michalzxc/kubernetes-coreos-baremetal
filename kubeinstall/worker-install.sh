@@ -257,6 +257,44 @@ spec:
 EOF
     fi
 
+    local TEMPLATE=/etc/kubernetes/manifests/kube-proxy.yaml
+    if [ ! -f $TEMPLATE ]; then
+        echo "TEMPLATE: $TEMPLATE"
+        mkdir -p $(dirname $TEMPLATE)
+        cat << EOF > $TEMPLATE
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kube-api-haproxy
+  namespace: kube-system
+  annotations:
+    rkt.alpha.kubernetes.io/stage1-name-override: coreos.com/rkt/stage1-fly
+spec:
+  hostNetwork: true
+  containers:
+  - name: kube-api-haproxy
+    image: concreteplatform/kubeapihaproxy
+    command:
+    - /usr/sbin/haproxy
+    - -f /etc/haproxy/haproxy.cfg
+    - -p /run/haproxy.pid
+    - -Ds
+    env:
+      - name: MASTERS
+        value: %HAPROXYAPI%
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - mountPath: /etc/kubernetes/ssl
+      name: "etc-kube-ssl"
+      readOnly: true
+  volumes:
+  - name: "etc-kube-ssl"
+    hostPath:
+      path: "/etc/kubernetes/ssl"
+EOF
+    fi
+
     local TEMPLATE=/etc/flannel/options.env
     if [ ! -f $TEMPLATE ]; then
         echo "TEMPLATE: $TEMPLATE"
@@ -326,7 +364,3 @@ fi
 systemctl enable flanneld; systemctl start flanneld
 
 systemctl enable kubelet; systemctl start kubelet
-
-sleep 60
-systemctl enable haproxy.service
-systemctl start haproxy.service
