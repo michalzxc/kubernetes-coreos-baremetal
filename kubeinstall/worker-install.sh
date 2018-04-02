@@ -257,7 +257,7 @@ spec:
 EOF
     fi
 
-    local TEMPLATE=/etc/kubernetes/manifests/kube-proxy.yaml
+    local TEMPLATE=/etc/kubernetes/manifests/kube-api-haproxy.yaml
     if [ ! -f $TEMPLATE ]; then
         echo "TEMPLATE: $TEMPLATE"
         mkdir -p $(dirname $TEMPLATE)
@@ -273,25 +273,27 @@ spec:
   hostNetwork: true
   containers:
   - name: kube-api-haproxy
-    image: concreteplatform/kubeapihaproxy
-    command:
-    - /usr/sbin/haproxy
-    - -f /etc/haproxy/haproxy.cfg
-    - -p /run/haproxy.pid
-    - -Ds
+    image: concreteplatform/kubeapihaproxy:latest
+    tty: true
     env:
-      - name: MASTERS
-        value: %HAPROXYAPI%
+    - name: MASTERS
+      value: %HAPROXYAPI%
     securityContext:
       privileged: true
     volumeMounts:
     - mountPath: /etc/kubernetes/ssl
       name: "etc-kube-ssl"
       readOnly: true
+    - mountPath: /sys/fs/cgroup
+      name: "systemd-cgroup"
+      readOnly: true
   volumes:
   - name: "etc-kube-ssl"
     hostPath:
       path: "/etc/kubernetes/ssl"
+  - name: "systemd-cgroup"
+    hostPath:
+      path: "/sys/fs/cgroup"
 EOF
     fi
 
