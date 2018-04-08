@@ -274,7 +274,7 @@ spec:
   containers:
   - name: kube-api-haproxy
     image: concreteplatform/kubeapihaproxy:latest
-    tty: true
+    command: [ "/usr/local/sbin/start.sh" ]
     env:
     - name: MASTERS
       value: %HAPROXYAPI%
@@ -284,16 +284,10 @@ spec:
     - mountPath: /etc/kubernetes/ssl
       name: "etc-kube-ssl"
       readOnly: true
-    - mountPath: /sys/fs/cgroup
-      name: "systemd-cgroup"
-      readOnly: true
   volumes:
   - name: "etc-kube-ssl"
     hostPath:
       path: "/etc/kubernetes/ssl"
-  - name: "systemd-cgroup"
-    hostPath:
-      path: "/sys/fs/cgroup"
 EOF
     fi
 
