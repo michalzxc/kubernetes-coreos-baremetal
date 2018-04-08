@@ -49,12 +49,6 @@ else
     export CALICO_OPTS=""
 fi
 
-if [ -z "$(echo "$ADVERTISE_IP"|egrep -o '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')" ]; then
-  local ADVERTISE_REAL="$(ip -4 addr show dev eth0|grep inet|egrep -o 'inet [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+'|awk '{print $2}')"
-else
-  ADVERTISE_REAL=$ADVERTISE_IP
-fi
-
 # -------------
 
 function init_config {
@@ -66,6 +60,12 @@ function init_config {
 
     if [ -z $ADVERTISE_IP ]; then
         export ADVERTISE_IP=$(awk -F= '/COREOS_PUBLIC_IPV4/ {print $2}' /etc/environment)
+    fi
+
+    if [ -z "$(echo "$ADVERTISE_IP"|egrep -o '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')" ]; then
+      local ADVERTISE_REAL="$(ip -4 addr show dev eth0|grep inet|egrep -o 'inet [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+'|awk '{print $2}')"
+    else
+      ADVERTISE_REAL=$ADVERTISE_IP
     fi
 
     for REQ in "${REQUIRED[@]}"; do
