@@ -82,7 +82,7 @@ else
 	echo "creating CoreOS cloud-config for $HOST with K8S version $K8S_VER to join $MASTER"
 	IP=${MASTER} # for etcd2 config
 
-	ENDPOINTS="$(cat inventory/masters|egrep -o "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"|sed "s/^/http:\\/\\//g"|sed "s/$/:2379/g"|xargs|sed 's/ /,/g')"
+	ENDPOINTS="$(cat inventory/masters|awk -F'//' '{print $2}'|awk -F':' '{print $1}'|sed "s/^/http:\\/\\//g"|sed "s/$/:2379/g"|xargs|sed 's/ /,/g')"
 	echo "ENDPOINTS: $ENDPOINTS"
 fi
 
