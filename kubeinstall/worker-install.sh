@@ -244,10 +244,16 @@ spec:
     - mountPath: /etc/kubernetes/ssl
       name: "etc-kube-ssl"
       readOnly: true
+    - mountPath: /etc/hosts
+      name: "hosts"
+      readOnly: true
   volumes:
   - name: "etc-kube-ssl"
     hostPath:
       path: "/etc/kubernetes/ssl"
+  - name: "hosts"
+    hostPath:
+      path: "/etc/hosts"
 EOF
     fi
 

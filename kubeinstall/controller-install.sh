@@ -237,6 +237,11 @@ spec:
 EOF
     fi
 
+    if [ -z "$(echo "$ADVERTISE_IP"|egrep -o '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')" ]; then
+      local ADVERTISE_REAL="$(ip -4 addr show dev eth0|grep inet|egrep -o 'inet [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+'|awk '{print $2}')"
+    else
+      ADVERTISE_REAL=$ADVERTISE_IP
+    fi
     local TEMPLATE=/etc/kubernetes/manifests/kube-apiserver.yaml
     if [ ! -f $TEMPLATE ]; then
         echo "TEMPLATE: $TEMPLATE"
@@ -265,7 +270,7 @@ spec:
     - --secure-port=443
     - --insecure-port=8080
     - --storage-backend=etcd2
-    - --advertise-address=${ADVERTISE_IP}
+    - --advertise-address=${ADVERTISE_REAL}
     - --admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota
     - --tls-cert-file=/etc/kubernetes/ssl/apiserver.pem
     - --tls-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem
@@ -918,6 +923,9 @@ spec:
             - mountPath: /etc/resolv.conf
               name: dns
               readOnly: true
+            - mountPath: /etc/hosts
+              name: hosts
+              readOnly: true
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
@@ -963,7 +971,9 @@ spec:
         - name: dns
           hostPath:
             path: /etc/resolv.conf
-
+        - name: hosts
+          hostPath:
+            path: /etc/hosts
 ---
 
 # This manifest deploys the Calico policy controller on Kubernetes.
