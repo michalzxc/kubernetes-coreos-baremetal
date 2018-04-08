@@ -62,6 +62,12 @@ function init_config {
         export ADVERTISE_IP=$(awk -F= '/COREOS_PUBLIC_IPV4/ {print $2}' /etc/environment)
     fi
 
+    if [ -z "$(echo "$ADVERTISE_IP"|egrep -o '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')" ]; then
+      export ADVERTISE_REAL="$(ip -4 addr show dev eth0|grep inet|egrep -o 'inet [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+'|awk '{print $2}')"
+    else
+      export ADVERTISE_REAL=$ADVERTISE_IP
+    fi
+
     for REQ in "${REQUIRED[@]}"; do
         if [ -z "$(eval echo \$$REQ)" ]; then
             echo "Missing required config value: ${REQ}"
@@ -265,7 +271,7 @@ spec:
     - --secure-port=443
     - --insecure-port=8080
     - --storage-backend=etcd2
-    - --advertise-address=${ADVERTISE_IP}
+    - --advertise-address=${ADVERTISE_REAL}
     - --admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota
     - --tls-cert-file=/etc/kubernetes/ssl/apiserver.pem
     - --tls-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem
@@ -769,17 +775,12 @@ spec:
 EOF
     fi
 
-    if [ -z "$(echo "$ADVERTISE_IP"|egrep -o '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')" ]; then
-      local IP_FLANNELD="$(ip -4 addr show dev eth0|grep inet|egrep -o 'inet [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+'|awk '{print $2}')"
-    else
-      IP_FLANNELD=$ADVERTISE_IP
-    fi
     local TEMPLATE=/etc/flannel/options.env
     if [ ! -f $TEMPLATE ]; then
         echo "TEMPLATE: $TEMPLATE"
         mkdir -p $(dirname $TEMPLATE)
         cat << EOF > $TEMPLATE
-FLANNELD_IFACE=$IP_FLANNELD
+FLANNELD_IFACE=$ADVERTISE_REAL
 FLANNELD_ETCD_ENDPOINTS=$ETCD_ENDPOINTS
 EOF
     fi
@@ -918,6 +919,9 @@ spec:
             - mountPath: /etc/resolv.conf
               name: dns
               readOnly: true
+            - mountPath: /etc/hosts
+              name: hosts
+              readOnly: true
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
@@ -963,7 +967,9 @@ spec:
         - name: dns
           hostPath:
             path: /etc/resolv.conf
-
+        - name: hosts
+          hostPath:
+            path: /etc/hosts
 ---
 
 # This manifest deploys the Calico policy controller on Kubernetes.
