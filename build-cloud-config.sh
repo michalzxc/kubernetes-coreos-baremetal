@@ -142,14 +142,9 @@ cloudconf=$(cat << EOF
     After=docker.service
     Requires=docker.service
     [Service]
-    ExecStartPre=-/usr/bin/docker kill openstackhosts
-    ExecStartPre=-/usr/bin/docker rm openstackhosts
-    ExecStartPre=/usr/bin/docker pull openstackhosts
-    ExecStart=/usr/bin/docker run %NETENV% --name openstackhosts --cap-add=SYS_ADMIN --cap-add DAC_READ_SEARCH --tmpfs /run --tmpfs /run/lock -v /sys/fs/cgroup:/sys/fs/cgroup:ro -v /etc/hosts:/etc/hosts:rw michalzxc/openstackhosts
-		Restart=always
+    ExecStart=/usr/bin/docker run --rm %NETENV% --name openstackhosts --cap-add=SYS_ADMIN --cap-add DAC_READ_SEARCH --tmpfs /run --tmpfs /run/lock -v /sys/fs/cgroup:/sys/fs/cgroup:ro -v /etc/hosts:/etc/hosts:rw michalzxc/openstackhosts
+    ExecStop=/usr/bin/docker stop openstackhosts
     [Install]
-		RequiredBy=kubeinstall.service
-		RequiredBy=etcd2.service
     WantedBy=multi-user.target
 EOF
 )
