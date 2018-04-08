@@ -138,46 +138,6 @@ exec nsenter -m -u -i -n -p -t 1 -- /usr/bin/rkt "\$@"
 EOF
     fi
 
-    local TEMPLATE=/etc/systemd/system/load-rkt-stage1.service
-    if [ ${CONTAINER_RUNTIME} = "rkt" ] && [ ! -f $TEMPLATE ]; then
-        echo "TEMPLATE: $TEMPLATE"
-        mkdir -p $(dirname $TEMPLATE)
-        cat << EOF > $TEMPLATE
-[Unit]
-Description=Load rkt stage1 images
-Documentation=http://github.com/coreos/rkt
-Requires=network-online.target
-After=network-online.target
-Before=rkt-api.service
-
-[Service]
-Type=oneshot
-RemainAfterExit=yes
-ExecStart=/usr/bin/rkt fetch /usr/lib/rkt/stage1-images/stage1-coreos.aci /usr/lib/rkt/stage1-images/stage1-fly.aci  --insecure-options=image
-
-[Install]
-RequiredBy=rkt-api.service
-EOF
-    fi
-
-    local TEMPLATE=/etc/systemd/system/rkt-api.service
-    if [ ${CONTAINER_RUNTIME} = "rkt" ] && [ ! -f $TEMPLATE ]; then
-        echo "TEMPLATE: $TEMPLATE"
-        mkdir -p $(dirname $TEMPLATE)
-        cat << EOF > $TEMPLATE
-[Unit]
-Before=kubelet.service
-
-[Service]
-ExecStart=/usr/bin/rkt api-service
-Restart=always
-RestartSec=10
-
-[Install]
-RequiredBy=kubelet.service
-EOF
-    fi
-
     local TEMPLATE=/etc/kubernetes/worker-kubeconfig.yaml
     if [ ! -f $TEMPLATE ]; then
         echo "TEMPLATE: $TEMPLATE"
@@ -291,12 +251,17 @@ spec:
 EOF
     fi
 
+    if [ -z "$(echo "$ADVERTISE_IP"|egrep -o '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')" ]; then
+      local IP_FLANNELD="$(ip -4 addr show dev eth0|grep inet|egrep -o 'inet [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+'|awk '{print $2}')"
+    else
+      IP_FLANNELD=$ADVERTISE_IP
+    fi
     local TEMPLATE=/etc/flannel/options.env
     if [ ! -f $TEMPLATE ]; then
         echo "TEMPLATE: $TEMPLATE"
         mkdir -p $(dirname $TEMPLATE)
         cat << EOF > $TEMPLATE
-FLANNELD_IFACE=$ADVERTISE_IP
+FLANNELD_IFACE=$IP_FLANNELD
 FLANNELD_ETCD_ENDPOINTS=$ETCD_ENDPOINTS
 EOF
     fi
@@ -351,11 +316,6 @@ chmod +x /opt/bin/host-rkt
 systemctl stop update-engine; systemctl mask update-engine
 
 systemctl daemon-reload
-
-if [ $CONTAINER_RUNTIME = "rkt" ]; then
-        systemctl enable load-rkt-stage1
-        systemctl enable rkt-api
-fi
 
 systemctl enable flanneld; systemctl start flanneld
 

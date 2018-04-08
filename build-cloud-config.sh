@@ -134,6 +134,7 @@ if [ -f cloudconf-openstack ]; then
 netenv="$(cat cloudconf-openstack)"
 cloudconf=$(cat << EOF
 - name: openstackhosts.service
+  command: start
   enable: true
   content: |
     [Unit]
