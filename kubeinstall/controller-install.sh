@@ -63,9 +63,9 @@ function init_config {
     fi
 
     if [ -z "$(echo "$ADVERTISE_IP"|egrep -o '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')" ]; then
-      local ADVERTISE_REAL="$(ip -4 addr show dev eth0|grep inet|egrep -o 'inet [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+'|awk '{print $2}')"
+      export ADVERTISE_REAL="$(ip -4 addr show dev eth0|grep inet|egrep -o 'inet [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+'|awk '{print $2}')"
     else
-      ADVERTISE_REAL=$ADVERTISE_IP
+      export ADVERTISE_REAL=$ADVERTISE_IP
     fi
 
     for REQ in "${REQUIRED[@]}"; do
