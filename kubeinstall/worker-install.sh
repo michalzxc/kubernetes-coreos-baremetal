@@ -138,46 +138,6 @@ exec nsenter -m -u -i -n -p -t 1 -- /usr/bin/rkt "\$@"
 EOF
     fi
 
-    local TEMPLATE=/etc/systemd/system/load-rkt-stage1.service
-    if [ ${CONTAINER_RUNTIME} = "rkt" ] && [ ! -f $TEMPLATE ]; then
-        echo "TEMPLATE: $TEMPLATE"
-        mkdir -p $(dirname $TEMPLATE)
-        cat << EOF > $TEMPLATE
-[Unit]
-Description=Load rkt stage1 images
-Documentation=http://github.com/coreos/rkt
-Requires=network-online.target
-After=network-online.target
-Before=rkt-api.service
-
-[Service]
-Type=oneshot
-RemainAfterExit=yes
-ExecStart=/usr/bin/rkt fetch /usr/lib/rkt/stage1-images/stage1-coreos.aci /usr/lib/rkt/stage1-images/stage1-fly.aci  --insecure-options=image
-
-[Install]
-RequiredBy=rkt-api.service
-EOF
-    fi
-
-    local TEMPLATE=/etc/systemd/system/rkt-api.service
-    if [ ${CONTAINER_RUNTIME} = "rkt" ] && [ ! -f $TEMPLATE ]; then
-        echo "TEMPLATE: $TEMPLATE"
-        mkdir -p $(dirname $TEMPLATE)
-        cat << EOF > $TEMPLATE
-[Unit]
-Before=kubelet.service
-
-[Service]
-ExecStart=/usr/bin/rkt api-service
-Restart=always
-RestartSec=10
-
-[Install]
-RequiredBy=kubelet.service
-EOF
-    fi
-
     local TEMPLATE=/etc/kubernetes/worker-kubeconfig.yaml
     if [ ! -f $TEMPLATE ]; then
         echo "TEMPLATE: $TEMPLATE"
@@ -351,11 +311,6 @@ chmod +x /opt/bin/host-rkt
 systemctl stop update-engine; systemctl mask update-engine
 
 systemctl daemon-reload
-
-if [ $CONTAINER_RUNTIME = "rkt" ]; then
-        systemctl enable load-rkt-stage1
-        systemctl enable rkt-api
-fi
 
 systemctl enable flanneld; systemctl start flanneld
 
