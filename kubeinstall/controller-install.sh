@@ -49,6 +49,12 @@ else
     export CALICO_OPTS=""
 fi
 
+if [ -z "$(echo "$ADVERTISE_IP"|egrep -o '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')" ]; then
+  local ADVERTISE_REAL="$(ip -4 addr show dev eth0|grep inet|egrep -o 'inet [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+'|awk '{print $2}')"
+else
+  ADVERTISE_REAL=$ADVERTISE_IP
+fi
+
 # -------------
 
 function init_config {
@@ -237,11 +243,6 @@ spec:
 EOF
     fi
 
-    if [ -z "$(echo "$ADVERTISE_IP"|egrep -o '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')" ]; then
-      local ADVERTISE_REAL="$(ip -4 addr show dev eth0|grep inet|egrep -o 'inet [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+'|awk '{print $2}')"
-    else
-      ADVERTISE_REAL=$ADVERTISE_IP
-    fi
     local TEMPLATE=/etc/kubernetes/manifests/kube-apiserver.yaml
     if [ ! -f $TEMPLATE ]; then
         echo "TEMPLATE: $TEMPLATE"
@@ -774,17 +775,12 @@ spec:
 EOF
     fi
 
-    if [ -z "$(echo "$ADVERTISE_IP"|egrep -o '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')" ]; then
-      local IP_FLANNELD="$(ip -4 addr show dev eth0|grep inet|egrep -o 'inet [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+'|awk '{print $2}')"
-    else
-      IP_FLANNELD=$ADVERTISE_IP
-    fi
     local TEMPLATE=/etc/flannel/options.env
     if [ ! -f $TEMPLATE ]; then
         echo "TEMPLATE: $TEMPLATE"
         mkdir -p $(dirname $TEMPLATE)
         cat << EOF > $TEMPLATE
-FLANNELD_IFACE=$IP_FLANNELD
+FLANNELD_IFACE=$ADVERTISE_REAL
 FLANNELD_ETCD_ENDPOINTS=$ETCD_ENDPOINTS
 EOF
     fi
