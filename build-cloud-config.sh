@@ -134,18 +134,26 @@ if [ -f cloudconf-openstack ]; then
 netenv="$(cat cloudconf-openstack)"
 cloudconf=$(cat << EOF
 - name: openstackhosts.service
+  content: |
+    [Unit]
+    Description=OpenStack Hostsfile Updated
+    [Service]
+    Type=simple
+    ExecStart=/usr/bin/rkt --insecure-options=all run %NETENV% --volume hosts,kind=host,source=/etc/hosts,readOnly=false --mount volume=hosts,target=/etc/hosts --volume dns,kind=host,source=/etc/resolv.conf --mount volume=dns,target=/etc/resolv.conf --uuid-file-save=/var/run/openstackhosts.uuid docker://michalzxc/openstackhosts:latest --caps-retain="CAP_SYS_ADMIN,CAP_DAC_READ_SEARCH,CAP_CHOWN" --exec /usr/local/sbin/hostsupdate
+    [Install]
+    WantedBy=multi-user.target
+- name: openstackhosts.timer
   command: start
   enable: true
   content: |
     [Unit]
     Description=OpenStack Hostsfile Updated
-    After=docker.service
-    Requires=docker.service
-    [Service]
-    ExecStart=/usr/bin/docker run --rm %NETENV% --name openstackhosts --cap-add=SYS_ADMIN --cap-add DAC_READ_SEARCH --tmpfs /run --tmpfs /run/lock -v /sys/fs/cgroup:/sys/fs/cgroup:ro -v /etc/hosts:/etc/hosts:rw michalzxc/openstackhosts
-    ExecStop=/usr/bin/docker stop openstackhosts
+    [Timer]
+    Unit=openstackhosts.service
+    OnUnitActiveSec=1min
+    OnBootSec=1min
     [Install]
-    WantedBy=multi-user.target
+    WantedBy=timers.target
 EOF
 )
 	cloudconf="$(echo -e "$cloudconf"|sed -e "s@%NETENV%@$netenv@g")"
