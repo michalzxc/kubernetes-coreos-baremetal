@@ -97,7 +97,6 @@ mkdir -p inventory/node-${HOST}/cloud-config/openstack/latest
 cp  ${INSTALLURL} inventory/node-${HOST}/install.sh
 cat inventory/node-${HOST}/install.sh | \
 sed -e "s% ETCD_ENDPOINTS=% ETCD_ENDPOINTS=${ENDPOINTS}%" | \
-sed -e "s/USE_CALICO=false/USE_CALICO=true/" | \
 sed -e "s/%HAPROXYAPI%/${HAPROXYAPI}/g" | \
 sed -e "s/CONTROLLER_ENDPOINT=/CONTROLLER_ENDPOINT=http:\/\/127.0.0.1:8182/g" > inventory/node-${HOST}/installtmp.sh
 mv inventory/node-${HOST}/installtmp.sh inventory/node-${HOST}/install.sh
