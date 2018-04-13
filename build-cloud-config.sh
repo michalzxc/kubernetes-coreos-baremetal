@@ -151,7 +151,7 @@ cloudconf=$(cat << EOF
     Unit=openstackhosts.service
     OnCalendar=*:0/1
     [Install]
-    WantedBy=timers.target
+    WantedBy=multi-user.target
 EOF
 )
 	cloudconf="$(echo -e "$cloudconf"|sed -e "s@%NETENV%@$netenv@g")"
