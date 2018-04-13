@@ -149,8 +149,7 @@ cloudconf=$(cat << EOF
     Description=OpenStack Hostsfile Updated
     [Timer]
     Unit=openstackhosts.service
-    OnUnitActiveSec=1min
-    OnBootSec=1min
+    OnCalendar=*:0/1
     [Install]
     WantedBy=timers.target
 EOF
