@@ -26,9 +26,6 @@ export POD_NETWORK=10.2.0.0/16
 # This must be the same DNS_SERVICE_IP used when configuring the controller nodes.
 export DNS_SERVICE_IP=10.3.0.10
 
-# Whether to use Calico for Kubernetes network policy.
-export USE_CALICO=false
-
 # Determines the container runtime for kubernetes to use. Accepts 'docker' or 'rkt'.
 export CONTAINER_RUNTIME=docker
 
@@ -36,17 +33,13 @@ export CONTAINER_RUNTIME=docker
 ENV_FILE=/run/coreos-kubernetes/options.env
 
 # To run a self hosted Calico install it needs to be able to write to the CNI dir
-if [ "${USE_CALICO}" = "true" ]; then
-    export CALICO_OPTS="--volume cni-bin,kind=host,source=/opt/cni/bin \
+export CALICO_OPTS="--volume cni-bin,kind=host,source=/opt/cni/bin \
                         --mount volume=cni-bin,target=/opt/cni/bin"
-else
-    export CALICO_OPTS=""
-fi
 
 # -------------
 
 function init_config {
-    local REQUIRED=( 'ADVERTISE_IP' 'ETCD_ENDPOINTS' 'CONTROLLER_ENDPOINT' 'DNS_SERVICE_IP' 'K8S_VER' 'HYPERKUBE_IMAGE_REPO' 'USE_CALICO' )
+    local REQUIRED=( 'ADVERTISE_IP' 'ETCD_ENDPOINTS' 'CONTROLLER_ENDPOINT' 'DNS_SERVICE_IP' 'K8S_VER' 'HYPERKUBE_IMAGE_REPO' )
 
     if [ -f $ENV_FILE ]; then
         export $(cat $ENV_FILE | xargs)
@@ -292,21 +285,6 @@ Requires=flanneld.service
 After=flanneld.service
 [Service]
 EnvironmentFile=/etc/kubernetes/cni/docker_opts_cni.env
-EOF
-    fi
-
-    local TEMPLATE=/etc/kubernetes/cni/net.d/10-flannel.conf
-    if [ "${USE_CALICO}" = "false" ] && [ ! -f "${TEMPLATE}" ]; then
-        echo "TEMPLATE: $TEMPLATE"
-        mkdir -p $(dirname $TEMPLATE)
-        cat << EOF > $TEMPLATE
-{
-    "name": "podnet",
-    "type": "flannel",
-    "delegate": {
-        "isDefaultGateway": true
-    }
-}
 EOF
     fi
 
