@@ -138,7 +138,8 @@ cloudconf=$(cat << EOF
     Description=OpenStack Hostsfile Updated
     [Service]
     Type=simple
-    ExecStart=/usr/bin/rkt --insecure-options=all run %NETENV% --volume hosts,kind=host,source=/etc/hosts,readOnly=false --mount volume=hosts,target=/etc/hosts --volume dns,kind=host,source=/etc/resolv.conf --mount volume=dns,target=/etc/resolv.conf --uuid-file-save=/var/run/openstackhosts.uuid docker://michalzxc/openstackhosts:latest --caps-retain="CAP_SYS_ADMIN,CAP_DAC_READ_SEARCH,CAP_CHOWN" --exec /usr/local/sbin/hostsupdate
+		ExecStartPre=-/usr/bin/rkt rm --uuid-file=/var/run/openstackhosts.uuid
+    ExecStart=/usr/bin/rkt --insecure-options=all run %NETENV% --net=host --volume hosts,kind=host,source=/etc/hosts,readOnly=false --mount volume=hosts,target=/etc/hosts --volume dns,kind=host,source=/etc/resolv.conf --mount volume=dns,target=/etc/resolv.conf --uuid-file-save=/var/run/openstackhosts.uuid docker://michalzxc/openstackhosts:latest --caps-retain="CAP_SYS_ADMIN,CAP_DAC_READ_SEARCH,CAP_CHOWN" --exec /usr/local/sbin/hostsupdate
     [Install]
     WantedBy=multi-user.target
 - name: openstackhosts.timer
