@@ -250,6 +250,7 @@ metadata:
     k8s-app: kube-apiserver
 spec:
   hostNetwork: true
+  dnsPolicy: ClusterFirstWithHostNet
   containers:
   - name: kube-apiserver
     image: ${HYPERKUBE_IMAGE_REPO}:$K8S_VER
