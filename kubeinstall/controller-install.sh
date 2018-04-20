@@ -7,7 +7,7 @@ systemctl start kubeinstallhealth.timer
 export ETCD_ENDPOINTS=
 
 # Specify the version (vX.Y.Z) of Kubernetes assets to deploy
-export K8S_VER=v1.7.8_coreos.2
+export K8S_VER=v1.8.5_coreos.0
 
 # Hyperkube image repository to use.
 export HYPERKUBE_IMAGE_REPO=quay.io/coreos/hyperkube
