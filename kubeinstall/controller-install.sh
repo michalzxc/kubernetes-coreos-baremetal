@@ -7,7 +7,7 @@ systemctl start kubeinstallhealth.timer
 export ETCD_ENDPOINTS=
 
 # Specify the version (vX.Y.Z) of Kubernetes assets to deploy
-export K8S_VER=v1.7.8_coreos.2
+export K8S_VER=v1.9.4_coreos.1
 
 # Hyperkube image repository to use.
 export HYPERKUBE_IMAGE_REPO=quay.io/coreos/hyperkube
@@ -146,6 +146,8 @@ Environment="RKT_RUN_ARGS=--uuid-file-save=${uuid_file} \
   --mount volume=etc-scsi,target=/etc/iscsi \
   --volume iscsid,kind=host,source=/usr/sbin/iscsid \
   --mount volume=iscsid,target=/usr/sbin/iscsid \
+  --volume varlibkubelet,kind=host,source=/var/lib/kubelet/ \
+  --mount volume=varlibkubelet,target=/var/lib/kubelet/ \
   ${CALICO_OPTS}"
 ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
 ExecStartPre=/usr/bin/mkdir -p /opt/cni/bin
@@ -154,18 +156,18 @@ ExecStartPre=-/usr/bin/rkt rm --uuid-file=${uuid_file}
 ExecStart=/usr/lib/coreos/kubelet-wrapper \
   --kubeconfig /etc/kubernetes/master-kubeconfig.yaml \
   --hostname-override=%HOST% \
-  --require-kubeconfig=true \
-  --register-schedulable=false \
+  --register-with-taints=node-role.kubernetes.io/master=true:NoSchedule \
+  --node-labels=kubernetes.io/role=master \
   --container-runtime=${CONTAINER_RUNTIME} \
   --network-plugin=cni \
   --cni-conf-dir=/etc/kubernetes/cni/net.d \
   --rkt-path=/usr/bin/rkt \
-  --rkt-stage1-image=coreos.com/rkt/stage1-coreos \
   --allow-privileged=true \
   --pod-manifest-path=/etc/kubernetes/manifests \
   --hostname-override=${ADVERTISE_IP} \
   --cluster_dns=${DNS_SERVICE_IP} \
-  --cluster_domain=cluster.local
+  --cluster_domain=cluster.local \
+  --volume-plugin-dir=/var/lib/kubelet/volumeplugins
 ExecStop=-/usr/bin/rkt stop --uuid-file=${uuid_file}
 Restart=always
 RestartSec=10
@@ -421,8 +423,11 @@ spec:
         k8s-app: kube-dns
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
-        scheduler.alpha.kubernetes.io/tolerations: '[{"key":"CriticalAddonsOnly", "operator":"Exists"}]'
     spec:
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
       replicas: 4
       containers:
       - name: kubedns
@@ -561,8 +566,11 @@ spec:
         k8s-app: kube-dns-autoscaler
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
-        scheduler.alpha.kubernetes.io/tolerations: '[{"key":"CriticalAddonsOnly", "operator":"Exists"}]'
     spec:
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
       containers:
       - name: autoscaler
         image: gcr.io/google_containers/cluster-proportional-autoscaler-amd64:1.0.0
@@ -637,7 +645,6 @@ spec:
         version: v1.2.0
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
-        scheduler.alpha.kubernetes.io/tolerations: '[{"key":"CriticalAddonsOnly", "operator":"Exists"}]'
     spec:
       containers:
         - image: gcr.io/google_containers/heapster:v1.2.0
@@ -729,7 +736,6 @@ spec:
         k8s-app: kubernetes-dashboard
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
-        scheduler.alpha.kubernetes.io/tolerations: '[{"key":"CriticalAddonsOnly", "operator":"Exists"}]'
     spec:
       containers:
       - name: kubernetes-dashboard
@@ -865,11 +871,12 @@ spec:
         k8s-app: calico-node
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
-        scheduler.alpha.kubernetes.io/tolerations: |
-          [{"key": "dedicated", "value": "master", "effect": "NoSchedule" },
-           {"key":"CriticalAddonsOnly", "operator":"Exists"}]
     spec:
       hostNetwork: true
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
       containers:
         # Runs calico/node container on each Kubernetes node.  This
         # container programs network policy and routes on each
@@ -976,13 +983,14 @@ spec:
         k8s-app: calico-policy
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
-        scheduler.alpha.kubernetes.io/tolerations: |
-          [{"key": "dedicated", "value": "master", "effect": "NoSchedule" },
-           {"key":"CriticalAddonsOnly", "operator":"Exists"}]
     spec:
       # The policy controller must run in the host network namespace so that
       # it isn't governed by policy that would prevent it from working.
       hostNetwork: true
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
       containers:
         - name: calico-policy-controller
           image: calico/kube-policy-controller:v0.4.0

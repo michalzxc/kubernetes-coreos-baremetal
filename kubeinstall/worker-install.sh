@@ -12,7 +12,7 @@ export ETCD_ENDPOINTS=
 export CONTROLLER_ENDPOINT=
 
 # Specify the version (vX.Y.Z) of Kubernetes assets to deploy
-export K8S_VER=v1.7.8_coreos.2
+export K8S_VER=v1.9.4_coreos.1
 
 # Hyperkube image repository to use.
 export HYPERKUBE_IMAGE_REPO=quay.io/coreos/hyperkube
@@ -84,6 +84,8 @@ Environment="RKT_RUN_ARGS=--uuid-file-save=${uuid_file} \
   --mount volume=etc-scsi,target=/etc/iscsi \
   --volume iscsid,kind=host,source=/usr/sbin/iscsid \
   --mount volume=iscsid,target=/usr/sbin/iscsid \
+  --volume varlibkubelet,kind=host,source=/var/lib/kubelet/ \
+  --mount volume=varlibkubelet,target=/var/lib/kubelet/ \
   ${CALICO_OPTS}"
 ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
 ExecStartPre=/usr/bin/mkdir -p /var/log/containers
@@ -92,9 +94,8 @@ ExecStartPre=/usr/bin/mkdir -p /opt/cni/bin
 ExecStart=/usr/lib/coreos/kubelet-wrapper \
   --container-runtime=${CONTAINER_RUNTIME} \
   --hostname-override=%HOST% \
-  --require-kubeconfig=true \
+  --node-labels=kubernetes.io/role=node \
   --rkt-path=/usr/bin/rkt \
-  --rkt-stage1-image=coreos.com/rkt/stage1-coreos \
   --register-node=true \
   --allow-privileged=true \
   --pod-manifest-path=/etc/kubernetes/manifests \
@@ -103,7 +104,8 @@ ExecStart=/usr/lib/coreos/kubelet-wrapper \
   --cluster_domain=cluster.local \
   --kubeconfig=/etc/kubernetes/worker-kubeconfig.yaml \
   --tls-cert-file=/etc/kubernetes/ssl/worker.pem \
-  --tls-private-key-file=/etc/kubernetes/ssl/worker-key.pem
+  --tls-private-key-file=/etc/kubernetes/ssl/worker-key.pem \
+  --volume-plugin-dir=/var/lib/kubelet/volumeplugins
 ExecStop=-/usr/bin/rkt stop --uuid-file=${uuid_file}
 Restart=always
 RestartSec=10
