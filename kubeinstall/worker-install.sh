@@ -304,3 +304,15 @@ systemctl daemon-reload
 systemctl enable flanneld; systemctl start flanneld
 
 systemctl enable kubelet; systemctl start kubelet
+
+if [ -f /etc/systemd/system/openstackhosts.timer ]; then
+  while [ 1 -eq 1 ]; do
+    basehost=$(hostname|sed 's/worker[0-9]//g'|sed 's/controller[0-9]//g')
+    controllerscount=$(grep $basehost /etc/hosts|grep controller|wc -l)
+    if [ $controllerscount -ge 3 ]; then
+      systemctl stop openstackhosts.timer; systemctl stop openstackhosts.service
+      break
+    fi
+    sleep 5
+  done
+fi

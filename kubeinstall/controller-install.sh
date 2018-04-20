@@ -250,6 +250,7 @@ metadata:
     k8s-app: kube-apiserver
 spec:
   hostNetwork: true
+  dnsPolicy: ClusterFirstWithHostNet
   containers:
   - name: kube-apiserver
     image: ${HYPERKUBE_IMAGE_REPO}:$K8S_VER
@@ -1057,4 +1058,17 @@ systemctl enable kubelet; systemctl start kubelet
 start_calico
 
 start_addons
+
+if [ -f /etc/systemd/system/openstackhosts.timer ]; then
+  while [ 1 -eq 1 ]; do
+    basehost=$(hostname|sed 's/worker[0-9]//g'|sed 's/controller[0-9]//g')
+    controllerscount=$(grep $basehost /etc/hosts|grep controller|wc -l)
+    if [ $controllerscount -ge 3 ]; then
+      systemctl stop openstackhosts.timer; systemctl stop openstackhosts.service
+      break
+    fi
+    sleep 5
+  done
+fi
+
 echo "DONE"
