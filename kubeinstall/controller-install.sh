@@ -156,13 +156,11 @@ ExecStartPre=-/usr/bin/rkt rm --uuid-file=${uuid_file}
 ExecStart=/usr/lib/coreos/kubelet-wrapper \
   --kubeconfig /etc/kubernetes/master-kubeconfig.yaml \
   --hostname-override=%HOST% \
-  --require-kubeconfig=true \
-  --register-schedulable=false \
+  --register-with-taints=node-role.kubernetes.io/master=true:NoSchedule \
   --container-runtime=${CONTAINER_RUNTIME} \
   --network-plugin=cni \
   --cni-conf-dir=/etc/kubernetes/cni/net.d \
   --rkt-path=/usr/bin/rkt \
-  --rkt-stage1-image=coreos.com/rkt/stage1-coreos \
   --allow-privileged=true \
   --pod-manifest-path=/etc/kubernetes/manifests \
   --hostname-override=${ADVERTISE_IP} \
