@@ -94,6 +94,7 @@ ExecStartPre=/usr/bin/mkdir -p /opt/cni/bin
 ExecStart=/usr/lib/coreos/kubelet-wrapper \
   --container-runtime=${CONTAINER_RUNTIME} \
   --hostname-override=%HOST% \
+  --node-labels=kubernetes.io/role=node \
   --rkt-path=/usr/bin/rkt \
   --register-node=true \
   --allow-privileged=true \

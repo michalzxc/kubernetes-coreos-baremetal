@@ -157,6 +157,7 @@ ExecStart=/usr/lib/coreos/kubelet-wrapper \
   --kubeconfig /etc/kubernetes/master-kubeconfig.yaml \
   --hostname-override=%HOST% \
   --register-with-taints=node-role.kubernetes.io/master=true:NoSchedule \
+  --node-labels=kubernetes.io/role=master \
   --container-runtime=${CONTAINER_RUNTIME} \
   --network-plugin=cni \
   --cni-conf-dir=/etc/kubernetes/cni/net.d \
