@@ -84,6 +84,8 @@ Environment="RKT_RUN_ARGS=--uuid-file-save=${uuid_file} \
   --mount volume=etc-scsi,target=/etc/iscsi \
   --volume iscsid,kind=host,source=/usr/sbin/iscsid \
   --mount volume=iscsid,target=/usr/sbin/iscsid \
+  --volume varlibkubelet,kind=host,source=/var/lib/kubelet/ \
+  --mount volume=varlibkubelet,target=/var/lib/kubelet/ \
   ${CALICO_OPTS}"
 ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
 ExecStartPre=/usr/bin/mkdir -p /var/log/containers
@@ -104,6 +106,7 @@ ExecStart=/usr/lib/coreos/kubelet-wrapper \
   --kubeconfig=/etc/kubernetes/worker-kubeconfig.yaml \
   --tls-cert-file=/etc/kubernetes/ssl/worker.pem \
   --tls-private-key-file=/etc/kubernetes/ssl/worker-key.pem
+  --volume-plugin-dir=/var/lib/kubelet/volumeplugins
 ExecStop=-/usr/bin/rkt stop --uuid-file=${uuid_file}
 Restart=always
 RestartSec=10

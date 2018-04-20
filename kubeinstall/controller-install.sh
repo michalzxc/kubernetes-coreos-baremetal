@@ -146,6 +146,8 @@ Environment="RKT_RUN_ARGS=--uuid-file-save=${uuid_file} \
   --mount volume=etc-scsi,target=/etc/iscsi \
   --volume iscsid,kind=host,source=/usr/sbin/iscsid \
   --mount volume=iscsid,target=/usr/sbin/iscsid \
+  --volume varlibkubelet,kind=host,source=/var/lib/kubelet/ \
+  --mount volume=varlibkubelet,target=/var/lib/kubelet/ \
   ${CALICO_OPTS}"
 ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
 ExecStartPre=/usr/bin/mkdir -p /opt/cni/bin
@@ -165,7 +167,8 @@ ExecStart=/usr/lib/coreos/kubelet-wrapper \
   --pod-manifest-path=/etc/kubernetes/manifests \
   --hostname-override=${ADVERTISE_IP} \
   --cluster_dns=${DNS_SERVICE_IP} \
-  --cluster_domain=cluster.local
+  --cluster_domain=cluster.local \
+  --volume-plugin-dir=/var/lib/kubelet/volumeplugins
 ExecStop=-/usr/bin/rkt stop --uuid-file=${uuid_file}
 Restart=always
 RestartSec=10
