@@ -114,6 +114,9 @@ coreos:
     - name: fleet.service
       command: start
       enable: true
+    - name: rpc-statd.service
+      command: start
+      enable: true
     - name: kubeinstall.service
       command: start
       content: |
@@ -141,6 +144,3 @@ coreos:
         OnCalendar=*:0/5
         [Install]
         WantedBy=multi-user.target
-    - name: rpc-statd
-      command: start
-      enable: true
