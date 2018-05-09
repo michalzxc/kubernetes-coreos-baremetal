@@ -32,9 +32,6 @@ export K8S_SERVICE_IP=10.3.0.1
 # This same IP must be configured on all worker nodes to enable DNS service discovery.
 export DNS_SERVICE_IP=10.3.0.10
 
-# Determines the container runtime for kubernetes to use. Accepts 'docker' or 'rkt'.
-export CONTAINER_RUNTIME=docker
-
 # The above settings can optionally be overridden using an environment file:
 ENV_FILE=/run/coreos-kubernetes/options.env
 
@@ -134,8 +131,6 @@ Environment="RKT_RUN_ARGS=--uuid-file-save=${uuid_file} \
   --mount volume=dns,target=/etc/resolv.conf \
   --volume rkt,kind=host,source=/opt/bin/host-rkt \
   --mount volume=rkt,target=/usr/bin/rkt \
-  --volume var-lib-rkt,kind=host,source=/var/lib/rkt \
-  --mount volume=var-lib-rkt,target=/var/lib/rkt \
   --volume stage,kind=host,source=/tmp \
   --mount volume=stage,target=/tmp \
   --volume var-log,kind=host,source=/var/log \
@@ -158,10 +153,9 @@ ExecStart=/usr/lib/coreos/kubelet-wrapper \
   --hostname-override=%HOST% \
   --register-with-taints=node-role.kubernetes.io/master=true:NoSchedule \
   --node-labels=kubernetes.io/role=master \
-  --container-runtime=${CONTAINER_RUNTIME} \
+  --container-runtime=docker \
   --network-plugin=cni \
   --cni-conf-dir=/etc/kubernetes/cni/net.d \
-  --rkt-path=/usr/bin/rkt \
   --allow-privileged=true \
   --pod-manifest-path=/etc/kubernetes/manifests \
   --hostname-override=${ADVERTISE_IP} \
