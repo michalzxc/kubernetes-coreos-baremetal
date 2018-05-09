@@ -114,6 +114,9 @@ coreos:
     - name: fleet.service
       command: start
       enable: true
+    - name: rpc-statd.service
+      command: start
+      enable: true
     - name: kubeinstall.service
       command: start
       content: |
