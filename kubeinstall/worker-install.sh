@@ -227,8 +227,6 @@ spec:
     env:
     - name: MASTERS
       value: %HAPROXYAPI%
-    securityContext:
-      privileged: true
     volumeMounts:
     - mountPath: /etc/kubernetes/ssl
       name: "etc-kube-ssl"
