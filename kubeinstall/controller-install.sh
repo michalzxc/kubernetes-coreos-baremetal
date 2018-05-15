@@ -129,6 +129,8 @@ Environment=KUBELET_IMAGE_URL=${HYPERKUBE_IMAGE_REPO}
 Environment="RKT_RUN_ARGS=--uuid-file-save=${uuid_file} \
   --volume dns,kind=host,source=/etc/resolv.conf \
   --mount volume=dns,target=/etc/resolv.conf \
+  --volume hosts,kind=host,source=/etc/hosts \
+  --mount volume=hosts,target=/etc/hosts \
   --volume rkt,kind=host,source=/opt/bin/host-rkt \
   --mount volume=rkt,target=/usr/bin/rkt \
   --volume stage,kind=host,source=/tmp \
