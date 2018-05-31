@@ -331,6 +331,7 @@ spec:
     - --leader-elect=true
     - --service-account-private-key-file=/etc/kubernetes/ssl/accounts-key.pem
     - --root-ca-file=/etc/kubernetes/ssl/ca.pem
+    - --horizontal-pod-autoscaler-use-rest-clients=false
     resources:
       requests:
         cpu: 200m
