@@ -122,7 +122,6 @@ netconf=$(cat << EOF
     Name=eth0
     [Network]
     DHCP=yes
-    DNS=8.8.8.8
 EOF
 )
 fi
