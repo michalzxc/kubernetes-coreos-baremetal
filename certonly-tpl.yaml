@@ -83,8 +83,6 @@ coreos:
       mask: true
       command: stop
 %NETSECTION%
-    - name: fleet.service
-      command: start
 %CLOUDSECTION%
     - name: etcd2.service
       command: start
@@ -111,9 +109,6 @@ coreos:
         TimeoutStartSec=0
         [Install]
         WantedBy=multi-user.target
-    - name: fleet.service
-      command: start
-      enable: true
     - name: rpc-statd.service
       command: start
       enable: true

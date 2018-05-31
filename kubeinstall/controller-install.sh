@@ -257,7 +257,7 @@ spec:
     - apiserver
     - --bind-address=0.0.0.0
     - --apiserver-count=3
-    - --etcd-servers=${ETCD_ENDPOINTS}
+    - --etcd-servers=http://127.0.0.1:2379
     - --allow-privileged=true
     - --service-cluster-ip-range=${SERVICE_IP_RANGE}
     - --secure-port=443
