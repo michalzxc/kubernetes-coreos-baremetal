@@ -14,7 +14,7 @@ Add ssh keys, generate masters configuration and workers
  ./updatemasters.sh
 ```
 
-# XEN
+# KVM Server
 __virsh:__
 ```
 vol-clone coreos_production_openstack_image.img controller1.img --pool default
@@ -41,7 +41,7 @@ scp inventory/node-worker2/config.iso michal@145.239.253.207:~/node-worker2.iso
 scp inventory/node-worker3/config.iso michal@145.239.253.207:~/node-worker3.iso
 ```
 
-# XEN
+# KVM Server
 ```
 mv /home/michal/*.iso /var/lib/libvirt/images/
 chown libvirt-qemu:libvirt-qemu /var/lib/libvirt/images/*.iso
