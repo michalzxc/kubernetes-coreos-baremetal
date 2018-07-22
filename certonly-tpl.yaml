@@ -62,8 +62,8 @@ write_files:
     content: |
       iscsi_tcp
   - path: /etc/kubernetes/cni/docker_opts_cni.env
-%ETCDSECTION%
 coreos:
+%ETCDSECTION%
   units:
     - name: update-engine.service
       mask: true
