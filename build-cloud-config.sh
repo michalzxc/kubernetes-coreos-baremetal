@@ -57,7 +57,7 @@ if [ ! -z "$(echo "$1"|grep "controller")" ]; then
 		fi
 	fi
 		ETCD_INITIAL_CLUSTER_STATE=new
-	echo "$1=http://${HOSTIP}:2380">>inventory/masters
+	echo "$1=https://${HOSTIP}:2380">>inventory/masters
 	NODETYPE="apiserver"
 	INSTALLURL=kubeinstall/controller-install.sh
 	NOETCDCLUSTER=0
@@ -114,13 +114,13 @@ else
 	echo "creating CoreOS cloud-config for $HOST with K8S version $K8S_VER to join $MASTER"
 	IP=${MASTER} # for etcd2 config
 
-	ENDPOINTS="$(cat inventory/masters|awk -F'//' '{print $2}'|awk -F':' '{print $1}'|sed "s/^/http:\\/\\//g"|sed "s/$/:2379/g"|xargs|sed 's/ /,/g')"
+	ENDPOINTS="$(cat inventory/masters|awk -F'//' '{print $2}'|awk -F':' '{print $1}'|sed "s/^/https:\\/\\//g"|sed "s/$/:2379/g"|xargs|sed 's/ /,/g')"
 	echo "ENDPOINTS: $ENDPOINTS"
 fi
 
 HAPROXYAPI="$(cat inventory/masters|egrep -o "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"|awk '{print $1":443"}'|xargs)"
 if [ -z "$(echo $HAPROXYAPI)" ]; then
-	HAPROXYAPI="$(cat inventory/masters|awk -F'=' '{print $2}'|sed 's/http:\/\///g'|awk -F':' '{print $1":443"}'|xargs)"
+	HAPROXYAPI="$(cat inventory/masters|awk -F'=' '{print $2}'|sed 's/https:\/\///g'|awk -F':' '{print $1":443"}'|xargs)"
 fi
 
 # create cloud config folder
