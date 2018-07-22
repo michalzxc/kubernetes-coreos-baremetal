@@ -196,7 +196,7 @@ if [ ! -z "$(for user in password/*;do basename $user; done)" ]; then
 		echo "     - \"sudo\"">>tmp/user_$user
 		echo "     - \"docker\"">>tmp/user_$user
 		echo "    ssh_authorized_keys:">>tmp/user_$user
-		echo $keys>>tmp/user_$user
+		echo "$keys">>tmp/user_$user
 	done
 fi
 users=$(cat tmp/user_*|sed -e 's/\(.*\)/\1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n'|sed 's/\\n$//g')
