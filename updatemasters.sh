@@ -26,5 +26,6 @@ for HOST in $masters; do
   echo ${ALLENDPOINTS}
   sed -i "s#%ETCD_INITIAL_CLUSTER%#${ms}#g" inventory/node-${HOST}/cloud-config/openstack/latest/user_data
   sed -i "s#%ETCD_CALICO%#${ALLENDPOINTS}#g" inventory/node-${HOST}/cloud-config/openstack/latest/user_data
+  sed "s#export ETCD_ENDPOINTS=.*#export ETCD_ENDPOINTS=${ALLENDPOINTS}#g" inventory/node-${HOST}/cloud-config/openstack/latest/user_data
   ./build-image.sh inventory/node-${HOST}
 done

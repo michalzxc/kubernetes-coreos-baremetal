@@ -82,7 +82,7 @@ if [ ! -z "$(echo "$1"|grep "controller")" ]; then
 	fi
 	echo "$HOSTIP/$PREFIX" > inventory/node-${HOST}/ip
 	echo "creating CoreOS cloud-config for controller ${HOST}(${IP})"
-	ENDPOINTS="http://${IP}:2379"
+	ENDPOINTS="https://${IP}:2379"
 else
 	# configure worker
 	ADVERTISE_IP=${IP}
