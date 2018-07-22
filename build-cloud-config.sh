@@ -6,6 +6,8 @@ if [ "$#" != "2" ] && [ "$#" != "3" ]; then
 	exit 1
 fi
 
+mkdir -p tmp
+
 # setting vars from args
 HOST=$1
 IP=$(echo "$2"| cut -d'/' -f1)
