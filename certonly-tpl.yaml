@@ -83,8 +83,8 @@ coreos:
       content: |
         [Unit]
         Description=K8S installer
-        After=etcd2.service
-        Requires=etcd2.service
+        After=etcd-member.service
+        Requires=etcd-member.service
 
         [Service]
         Type=oneshot
