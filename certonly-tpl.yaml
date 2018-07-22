@@ -62,6 +62,7 @@ write_files:
     content: |
       iscsi_tcp
   - path: /etc/kubernetes/cni/docker_opts_cni.env
+%ETCDSECTION%
 coreos:
   units:
     - name: update-engine.service
@@ -74,7 +75,6 @@ coreos:
       mask: true
       command: stop
 %NETSECTION%
-%ETCDSECTION%
     - name: rpc-statd.service
       command: start
       enable: true
