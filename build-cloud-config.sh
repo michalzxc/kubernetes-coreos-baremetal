@@ -158,7 +158,7 @@ EOF
 )
 fi
 netconf=$(echo "$netconf"|sed -e 's/\(.*\)/    \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')
-cat certonly-tpl.yaml | sed -e "s/%NETSECTION%/$netconf/g" >  tmp/certonly-tpl.yaml2
+cat certonly-tpl.yaml | sed -e "s/%NETSECTION%/$netconf/g" >  tmp/certonly-tpl.yaml2a
 
 if [ $NOETCDCLUSTER -eq 1 ]; then
 	etcdsection=""
@@ -177,7 +177,7 @@ EOF
 )
 etcdsection=$(echo "$etcdsection"|sed -e 's/\(.*\)/\1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n'|sed 's/\\n$//g')
 fi
-cat certonly-tpl.yaml | sed -e "s/%ETCDSECTION%/$etcdsection/g" >  tmp/certonly-tpl.yaml2
+cat tmp/certonly-tpl.yaml2a | sed -e "s/%ETCDSECTION%/$etcdsection/g" >  tmp/certonly-tpl.yaml2
 
 
 #ROOT SSH keys
