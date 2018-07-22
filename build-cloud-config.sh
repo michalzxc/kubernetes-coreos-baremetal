@@ -127,6 +127,27 @@ EOF
 fi
 netconf=$(echo "$netconf"|sed -e 's/\(.*\)/    \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')
 cat certonly-tpl.yaml | sed -e "s/%NETSECTION%/$netconf/g" >  tmp/certonly-tpl.yaml2
+
+if [ $NOETCDCLUSTER -eq 1 ]; then
+	etcdsection=""
+else
+etcdsection=$(cat << EOF
+	etcd:
+	  name:                        kubernetesetcd
+	  listen_client_urls:          http://0.0.0.0:2379
+	  advertise_client_urls:       http://%ETCDADVERTISEIP%:2379
+	  listen_peer_urls:            http://%IP%:2380
+	  initial_advertise_peer_urls: http://%IP%:2380
+	  initial_cluster:             kubernetesetcd=%ETCD_INITIAL_CLUSTER%
+	  initial_cluster_token:       kubernetesetcd
+	  initial_cluster_state:       new
+EOF
+)
+etcdsection=$(echo "$etcdsection"|sed -e 's/\(.*\)/\1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n'|sed 's/\\n$//g')
+fi
+cat certonly-tpl.yaml | sed -e "s/%ETCDSECTION%/$etcdsection/g" >  tmp/certonly-tpl.yaml2
+
+
 #ROOT SSH keys
 rootsshkeys=$(cat ssh/root|sed -e 's/\(.*\)/  \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n'|sed 's/\\n$//g')
 cat tmp/certonly-tpl.yaml2 | sed -e "s/%ROOTSSHKEYS%/$rootsshkeys/g" >  tmp/certonly-tpl.yaml2b

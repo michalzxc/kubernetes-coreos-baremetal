@@ -262,7 +262,7 @@ spec:
     - --service-cluster-ip-range=${SERVICE_IP_RANGE}
     - --secure-port=443
     - --insecure-port=8080
-    - --storage-backend=etcd2
+    - --storage-backend=etcd3
     - --advertise-address=${ADVERTISE_REAL}
     - --admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota
     - --tls-cert-file=/etc/kubernetes/ssl/apiserver.pem

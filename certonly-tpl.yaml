@@ -74,31 +74,7 @@ coreos:
       mask: true
       command: stop
 %NETSECTION%
-    - name: etcd2.service
-      command: start
-      enable: true
-      content: |
-        [Unit]
-        Description=etcd2
-        Conflicts=etcd.service
-        [Service]
-        User=etcd
-        Type=notify
-        Environment="ETCD_ADVERTISE_CLIENT_URLS=http://%ETCDADVERTISEIP%:2379"
-        Environment="ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379"
-        Environment="ETCD_LISTEN_PEER_URLS=http://%IP%:2380"
-        Environment=ETCD_DATA_DIR=/var/lib/etcd2
-        Environment=ETCD_NAME=%HOST%
-        Environment=ETCD_INITIAL_CLUSTER_STATE=%ETCD_INITIAL_CLUSTER_STATE%
-        Environment=ETCD_INITIAL_CLUSTER=%ETCD_INITIAL_CLUSTER%
-        Environment="ETCD_INITIAL_ADVERTISE_PEER_URLS=http://%IP%:2380"
-        ExecStart=/usr/bin/etcd2
-        Restart=always
-        RestartSec=10s
-        LimitNOFILE=40000
-        TimeoutStartSec=0
-        [Install]
-        WantedBy=multi-user.target
+%ETCDSECTION%
     - name: rpc-statd.service
       command: start
       enable: true
