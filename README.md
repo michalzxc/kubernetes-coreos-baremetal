@@ -4,6 +4,7 @@ FORK of [ xetys/kubernetes-coreos-baremetal](https://github.com/xetys/kubernetes
 Add ssh keys, generate masters configuration and workers
 ```
  ./addrootsshkey.sh ~/.ssh/authorized_keys
+ ./adduser.sh USER 'ENCRYPTEDLINUXPASSWORD' ~/.ssh/authorized_keys
  ./build-cloud-config.sh controller1 controller1.local dhcp
  ./build-cloud-config.sh controller2 controller2.local dhcp
  ./build-cloud-config.sh controller3 controller3.local dhcp
