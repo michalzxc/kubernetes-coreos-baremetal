@@ -8,3 +8,5 @@ do
     ./build-cloud-config.sh $line
   fi
 done < <(echo -e "$parameters")
+
+./updatemasters.sh
