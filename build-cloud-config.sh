@@ -190,15 +190,6 @@ sed -e s/%GW%/${GW}/g | \
 sed -e s/%ETCD_INITIAL_CLUSTER_STATE%/${ETCD_INITIAL_CLUSTER_STATE}/g | \
 sed -e s/%HOSTIP%/${HOSTIP}/g > inventory/node-${HOST}/cloud-config/openstack/latest/user_data
 
-if [ $NOETCDCLUSTER -eq 1 ]; then
-	cat inventory/node-${HOST}/cloud-config/openstack/latest/user_data | \
-	 grep -v "ETCD_INITIAL_CLUSTER_STATE" | \
-	 grep -v "ETCD_LISTEN_PEER_URLS" | \
-	 grep -v "ETCD_INITIAL_CLUSTER" | \
-	 grep -v "ETCD_INITIAL_ADVERTISE_PEER_URLS" > inventory/node-${HOST}/cloud-config/openstack/latest/user_data_new
-	 mv inventory/node-${HOST}/cloud-config/openstack/latest/user_data_new inventory/node-${HOST}/cloud-config/openstack/latest/user_data
-fi
-
 ./build-image.sh inventory/node-${HOST}
 
 rm tmp/*
