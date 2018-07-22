@@ -164,18 +164,30 @@ if [ $NOETCDCLUSTER -eq 1 ]; then
 	etcdsection=""
 else
 etcdsection=$(cat << EOF
-  etcd:
-    name:                        kubernetesetcd
-    listen_client_urls:          http://0.0.0.0:2379
-    advertise_client_urls:       http://%ETCDADVERTISEIP%:2379
-    listen_peer_urls:            http://%IP%:2380
-    initial_advertise_peer_urls: http://%IP%:2380
-    initial_cluster:             kubernetesetcd=%ETCD_INITIAL_CLUSTER%
-    initial_cluster_token:       kubernetesetcd
-    initial_cluster_state:       new
+[Service]
+Environment="ETCD_IMAGE_TAG=v3.2.0"
+Environment="ETCD_DATA_DIR=/var/lib/etcd"
+Environment="ETCD_SSL_DIR=/etc/ssl/certs"
+Environment="ETCD_OPTS=--name %HOST% \
+  --listen-client-urls http://0.0.0.0:2379 \
+  --advertise-client-urls http://%ETCDADVERTISEIP%:2379 \
+  --listen-peer-urls http://%IP%:2380 \
+  --initial-advertise-peer-urls http://%IP%:2380 \
+  --initial-cluster %ETCD_INITIAL_CLUSTER% \
+  --initial-cluster-token mytoken \
+  --initial-cluster-state %ETCD_INITIAL_CLUSTER_STATE% \
+  --client-cert-auth \
+  --trusted-ca-file /etc/kubernetes/ssl/ca.pem \
+  --cert-file /etc/kubernetes/ssl/%NODETYPE%.pem \
+  --key-file /etc/kubernetes/ssl/%NODETYPE%-key.pem \
+  --peer-client-cert-auth \
+  --peer-trusted-ca-file /etc/kubernetes/ssl/ca.pem \
+  --peer-cert-file /etc/kubernetes/ssl/%NODETYPE%.pem \
+  --peer-key-file /etc/kubernetes/ssl/%NODETYPE%-key.pem \
+  --auto-compaction-retention 1"
 EOF
 )
-etcdsection=$(echo "$etcdsection"|sed -e 's/\(.*\)/\1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n'|sed 's/\\n$//g')
+etcdsection=$(echo "$etcdsection"|sed -e 's/\(.*\)/      \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n'|sed 's/\\n$//g')
 fi
 cat tmp/certonly-tpl.yaml2a | sed -e "s/%ETCDSECTION%/$etcdsection/g" >  tmp/certonly-tpl.yaml2
 

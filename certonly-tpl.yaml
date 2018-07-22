@@ -37,25 +37,11 @@ write_files:
     permissions: 0600
     content: |
 %ACCOUNTS_KEY_PEM%
-  - path: /etc/nsswitch.conf
+  - path: /etc/systemd/system/etcd-member.service.d/20-cl-etcd-member.conf
     owner: "root"
-    permissions: 0644
+    permissions: 0600
     content: |
-      # /etc/nsswitch.conf:
-      passwd:      files usrfiles
-      shadow:      files usrfiles
-      group:       files usrfiles
-      hosts:       files usrfiles resolve dns
-      networks:    files usrfiles dns
-      services:    files usrfiles
-      protocols:   files usrfiles
-      rpc:         files usrfiles
-      ethers:      files
-      netmasks:    files
-      netgroup:    files
-      bootparams:  files
-      automount:   files
-      aliases:     files
+%ETCDSECTION%
   - path: /etc/modules-load.d/iscsi.conf
     owner: "root"
     permissions: 0644
@@ -63,7 +49,6 @@ write_files:
       iscsi_tcp
   - path: /etc/kubernetes/cni/docker_opts_cni.env
 coreos:
-%ETCDSECTION%
   units:
     - name: update-engine.service
       mask: true
