@@ -166,24 +166,25 @@ else
 etcdsection=$(cat << EOF
 [Service]
 Environment="ETCD_IMAGE_TAG=v3.2.0"
+Environment="ETCD_USER=root"
 Environment="ETCD_DATA_DIR=/var/lib/etcd"
-Environment="ETCD_SSL_DIR=/etc/ssl/certs"
+Environment="ETCD_SSL_DIR=/etc/kubernetes/ssl/"
 Environment="ETCD_OPTS=--name %HOST% \
-  --listen-client-urls http://0.0.0.0:2379 \
-  --advertise-client-urls http://%ETCDADVERTISEIP%:2379 \
-  --listen-peer-urls http://%IP%:2380 \
-  --initial-advertise-peer-urls http://%IP%:2380 \
+  --listen-client-urls https://0.0.0.0:2379 \
+  --advertise-client-urls https://%ETCDADVERTISEIP%:2379 \
+  --listen-peer-urls https://0.0.0.0:2380 \
+  --initial-advertise-peer-urls https://%IP%:2380 \
   --initial-cluster %ETCD_INITIAL_CLUSTER% \
   --initial-cluster-token mytoken \
   --initial-cluster-state %ETCD_INITIAL_CLUSTER_STATE% \
   --client-cert-auth \
-  --trusted-ca-file /etc/kubernetes/ssl/ca.pem \
-  --cert-file /etc/kubernetes/ssl/%NODETYPE%.pem \
-  --key-file /etc/kubernetes/ssl/%NODETYPE%-key.pem \
+  --trusted-ca-file /etc/ssl/certs/ca.pem \
+  --cert-file /etc/ssl/certs/%NODETYPE%.pem \
+  --key-file /etc/ssl/certs/%NODETYPE%-key.pem \
   --peer-client-cert-auth \
-  --peer-trusted-ca-file /etc/kubernetes/ssl/ca.pem \
-  --peer-cert-file /etc/kubernetes/ssl/%NODETYPE%.pem \
-  --peer-key-file /etc/kubernetes/ssl/%NODETYPE%-key.pem \
+  --peer-trusted-ca-file /etc/ssl/certs/ca.pem \
+  --peer-cert-file /etc/ssl/certs/%NODETYPE%.pem \
+  --peer-key-file /etc/ssl/certs/%NODETYPE%-key.pem \
   --auto-compaction-retention 1"
 EOF
 )

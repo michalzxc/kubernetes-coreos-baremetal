@@ -7,7 +7,7 @@ fi
 
 masters=$(cat inventory/masters|awk -F'=' '{print $1}')
 
-ALLENDPOINTS="$(cat inventory/masters|egrep -o "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"|sed "s/^/http:\\/\\//g"|sed "s/$/:2379/g"|xargs|sed 's/ /,/g')"
+ALLENDPOINTS="$(cat inventory/masters|egrep -o "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"|sed "s/^/https:\\/\\//g"|sed "s/$/:2379/g"|xargs|sed 's/ /,/g')"
 if [ -z "$(echo $ALLENDPOINTS)" ]; then
   ALLENDPOINTS="$(cat inventory/masters|awk -F'=' '{print $2}'|sed "s/:2380/:2379,/g"|xargs|sed 's/,$//g'|sed 's/ //g')"
 fi
