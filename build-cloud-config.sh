@@ -127,6 +127,9 @@ EOF
 fi
 netconf=$(echo "$netconf"|sed -e 's/\(.*\)/    \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')
 cat certonly-tpl.yaml | sed -e "s/%NETSECTION%/$netconf/g" >  certonly-tpl.yaml2
+#ROOT SSH keys
+rootsshkeys=$(cat ssh/root|sed -e 's/\(.*\)/  \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n'|sed 's/\\n$//g')
+cat certonly-tpl.yaml2 | sed -e "s/%ROOTSSHKEYS%/$rootsshkeys/g" >  certonly-tpl.yaml2b
 ###OpenStack DNS
 if [ -f cloudconf-openstack ]; then
 netenv="$(cat cloudconf-openstack)"
@@ -159,7 +162,7 @@ EOF
 else
 	cloudconf=""
 fi
-cat certonly-tpl.yaml2 | sed -e "s/%CLOUDSECTION%/$cloudconf/g" >  certonly-tpl.yaml3
+cat certonly-tpl.yaml2b | sed -e "s/%CLOUDSECTION%/$cloudconf/g" >  certonly-tpl.yaml3
 
 # bash templating
 rm -f inventory/node-${HOST}/cloud-config/openstack/latest/user_data

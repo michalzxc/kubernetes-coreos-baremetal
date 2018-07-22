@@ -3,7 +3,7 @@
 hostname: %HOST%
 # include one or more SSH public keys
 ssh_authorized_keys:
-  - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDZYL/631qBTScS+sQb9L7GKHczu1c9+ObEsmE5xyQBF9g1i0SiB/v1IxligpGMSFu1squfjsOZrBdGGCBaZ9rJQt7q1Uvi95QXA7ka6sAbxPvAppWypkutdytX9PY009C25SXzhG8Wo9MbcZF8g0dYJEyPnC+7OMf0Uz5EsqFGxSWhIqUSAc92mMye2YkI0Y1y+HUJUNAYjOK7rnaV34yL+bqOc3HQ/lFoCEpJ7AQmj+373z/CLRGJo+6ckBkptlFU2jCCbjeXE998MtBQ/OhjdibJBiQWuwiCf8ZQ1ggAVz4vl5gvMYRA9fC9MFW1ke2BbpnkAJZeUBDwM//TsK8R MonkeySphere2016-12-06T16:05:42 Michal Rydlikowski (Personal Secondary Email Address) <Michal.Rydlikowski@gmail.com>
+%ROOTSSHKEYS%
 users:
   - name: "michalzxc"
     passwd: "$6$BP4OCopq$QZujrmUwUQvD3GAGrjNOLJLz.o0./MXxL3KM1509jgxd2RxRnia75G8QL2cf72B5rTxycg30zGIx61lNyoqtN0"
