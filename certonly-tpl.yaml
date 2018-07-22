@@ -74,7 +74,6 @@ coreos:
       mask: true
       command: stop
 %NETSECTION%
-%CLOUDSECTION%
     - name: etcd2.service
       command: start
       enable: true

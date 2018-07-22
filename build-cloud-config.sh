@@ -149,43 +149,9 @@ fi
 users=$(cat tmp/user_*|sed -e 's/\(.*\)/\1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n'|sed 's/\\n$//g')
 cat tmp/certonly-tpl.yaml2b | sed -e "s/%USERS%/$users/g" > tmp/certonly-tpl.yaml2c
 
-###OpenStack DNS
-if [ -f cloudconf-openstack ]; then
-netenv="$(cat cloudconf-openstack)"
-cloudconf=$(cat << EOF
-- name: openstackhosts.service
-  content: |
-    [Unit]
-    Description=OpenStack Hostsfile Updated
-    [Service]
-    Type=simple
-    ExecStartPre=-/usr/bin/rkt rm --uuid-file=/var/run/openstackhosts.uuid
-    ExecStart=/usr/bin/rkt --insecure-options=all run %NETENV% --net=host --volume hosts,kind=host,source=/etc/hosts,readOnly=false --mount volume=hosts,target=/etc/hosts --volume dns,kind=host,source=/etc/resolv.conf --mount volume=dns,target=/etc/resolv.conf --uuid-file-save=/var/run/openstackhosts.uuid docker://michalzxc/openstackhosts:latest --caps-retain="CAP_SYS_ADMIN,CAP_DAC_READ_SEARCH,CAP_CHOWN" --exec /usr/local/sbin/hostsupdate
-    [Install]
-    WantedBy=multi-user.target
-- name: openstackhosts.timer
-  command: start
-  enable: true
-  content: |
-    [Unit]
-    Description=OpenStack Hostsfile Updated
-    [Timer]
-    Unit=openstackhosts.service
-    OnCalendar=*:0/1
-    [Install]
-    WantedBy=multi-user.target
-EOF
-)
-	cloudconf="$(echo -e "$cloudconf"|sed -e "s@%NETENV%@$netenv@g")"
-	cloudconf=$(echo "$cloudconf"|sed -e 's/\(.*\)/    \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')
-else
-	cloudconf=""
-fi
-cat tmp/certonly-tpl.yaml2c | sed -e "s/%CLOUDSECTION%/$cloudconf/g" >  tmp/certonly-tpl.yaml3
-
 # bash templating
 rm -f inventory/node-${HOST}/cloud-config/openstack/latest/user_data
-cat tmp/certonly-tpl.yaml3 | \
+cat tmp/certonly-tpl.yaml2c | \
 sed -e s/%HOST%/${HOST}/g | \
 sed -e "s/%INSTALL_SCRIPT%/$(<inventory/node-${HOST}/install.sh sed -e 's/\(.*\)/      \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')/g" | \
 sed -e "s/%CA_PEM%/$(<ssl/ca.pem sed -e 's/\(.*\)/      \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')/g" | \
