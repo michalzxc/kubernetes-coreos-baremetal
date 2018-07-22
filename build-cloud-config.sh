@@ -225,3 +225,5 @@ sed -e s/%HOSTIP%/${HOSTIP}/g > inventory/node-${HOST}/cloud-config/openstack/la
 ./build-image.sh inventory/node-${HOST}
 
 rm tmp/*
+
+echo "$@" > inventory/node-${HOST}/parameters
