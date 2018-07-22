@@ -126,10 +126,29 @@ EOF
 )
 fi
 netconf=$(echo "$netconf"|sed -e 's/\(.*\)/    \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')
-cat certonly-tpl.yaml | sed -e "s/%NETSECTION%/$netconf/g" >  certonly-tpl.yaml2
+cat certonly-tpl.yaml | sed -e "s/%NETSECTION%/$netconf/g" >  tmp/certonly-tpl.yaml2
 #ROOT SSH keys
 rootsshkeys=$(cat ssh/root|sed -e 's/\(.*\)/  \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n'|sed 's/\\n$//g')
-cat certonly-tpl.yaml2 | sed -e "s/%ROOTSSHKEYS%/$rootsshkeys/g" >  certonly-tpl.yaml2b
+cat tmp/certonly-tpl.yaml2 | sed -e "s/%ROOTSSHKEYS%/$rootsshkeys/g" >  tmp/certonly-tpl.yaml2b
+#users
+if [ ! -z "$(for user in password/*;do basename $user; done)" ]; then
+	for user in password/*; do
+		user=$(basename $user)
+		password=$(cat password/$user)
+		keys=$(cat ssh/$user|sed "s/^/      /g")
+		rm tmp/user_$user
+		echo "  - name: \"$user\"">tmp/user_$user
+		echo "    passwd: \"$password\"">>tmp/user_$user
+		echo "    groups:">>tmp/user_$user
+		echo "     - \"sudo\"">>tmp/user_$user
+		echo "     - \"docker\"">>tmp/user_$user
+		echo "    ssh_authorized_keys:">>tmp/user_$user
+		echo $keys>>tmp/user_$user
+	done
+fi
+users=$(cat tmp/user_*|sed -e 's/\(.*\)/\1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n'|sed 's/\\n$//g')
+cat tmp/certonly-tpl.yaml2b | sed -e "s/%USERS%/$users/g" > tmp/certonly-tpl.yaml2c
+
 ###OpenStack DNS
 if [ -f cloudconf-openstack ]; then
 netenv="$(cat cloudconf-openstack)"
@@ -162,11 +181,11 @@ EOF
 else
 	cloudconf=""
 fi
-cat certonly-tpl.yaml2b | sed -e "s/%CLOUDSECTION%/$cloudconf/g" >  certonly-tpl.yaml3
+cat tmp/certonly-tpl.yaml2c | sed -e "s/%CLOUDSECTION%/$cloudconf/g" >  tmp/certonly-tpl.yaml3
 
 # bash templating
 rm -f inventory/node-${HOST}/cloud-config/openstack/latest/user_data
-cat certonly-tpl.yaml3 | \
+cat tmp/certonly-tpl.yaml3 | \
 sed -e s/%HOST%/${HOST}/g | \
 sed -e "s/%INSTALL_SCRIPT%/$(<inventory/node-${HOST}/install.sh sed -e 's/\(.*\)/      \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')/g" | \
 sed -e "s/%CA_PEM%/$(<ssl/ca.pem sed -e 's/\(.*\)/      \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')/g" | \
@@ -194,3 +213,5 @@ if [ $NOETCDCLUSTER -eq 1 ]; then
 fi
 
 ./build-image.sh inventory/node-${HOST}
+
+rm tmp/*
