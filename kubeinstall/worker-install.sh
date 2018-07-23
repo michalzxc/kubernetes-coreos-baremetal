@@ -92,6 +92,9 @@ ExecStart=/usr/lib/coreos/kubelet-wrapper \
   --container-runtime=docker \
   --hostname-override=%HOST% \
   --node-labels=kubernetes.io/role=node \
+  --container-runtime=docker \
+  --network-plugin=cni \
+  --cni-conf-dir=/etc/kubernetes/cni/net.d \
   --register-node=true \
   --allow-privileged=true \
   --pod-manifest-path=/etc/kubernetes/manifests \
