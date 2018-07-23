@@ -83,6 +83,8 @@ Environment="RKT_RUN_ARGS=--uuid-file-save=${uuid_file} \
   --mount volume=iscsid,target=/usr/sbin/iscsid \
   --volume varlibkubelet,kind=host,source=/var/lib/kubelet/ \
   --mount volume=varlibkubelet,target=/var/lib/kubelet/ \
+  --volume varlibcalico,kind=host,source=/var/lib/calico/ \
+  --mount volume=varlibcalico,target=/var/lib/calico/ \
   ${CALICO_OPTS}"
 ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
 ExecStartPre=/usr/bin/mkdir -p /var/log/containers
