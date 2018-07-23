@@ -39,7 +39,7 @@ ENV_FILE=/run/coreos-kubernetes/options.env
 export CALICO_OPTS="--volume cni-bin,kind=host,source=/opt/cni/bin \
                         --mount volume=cni-bin,target=/opt/cni/bin"
 
-# -------------
+mkdir -p /var/lib/calico/
 
 function init_config {
     local REQUIRED=('ADVERTISE_IP' 'POD_NETWORK' 'ETCD_ENDPOINTS' 'SERVICE_IP_RANGE' 'K8S_SERVICE_IP' 'DNS_SERVICE_IP' 'K8S_VER' 'HYPERKUBE_IMAGE_REPO')
