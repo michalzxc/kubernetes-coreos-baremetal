@@ -886,7 +886,7 @@ data:
             "type": "k8s"
           },
           "kubernetes": {
-            "kubeconfig": "__KUBECONFIG_FILEPATH__"
+            "kubeconfig": "/etc/kubernetes/cni/net.d/__KUBECONFIG_FILENAME__"
           }
         },
         {
