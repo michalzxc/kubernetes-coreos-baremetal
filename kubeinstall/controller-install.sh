@@ -1047,7 +1047,7 @@ spec:
             path: /opt/cni/bin
         - name: cni-net-dir
           hostPath:
-            path: /etc/cni/net.d
+            path: /etc/kubernetes/cni/net.d
 
 # Create all the CustomResourceDefinitions needed for
 # Calico policy and networking mode.
