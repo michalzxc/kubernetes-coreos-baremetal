@@ -73,7 +73,7 @@ function init_flannel {
         IFS=',' read -ra ES <<< "$ETCD_ENDPOINTS"
         for ETCD in "${ES[@]}"; do
             echo "Trying: $ETCD"
-            if [ -n "$(curl --cacert /etc/kubernetes/ssl/ca.pem --cert /etc/kubernetes/ssl/apiserver.pem --key /etc/kubernetes/ssl/apiserver-key.pem --silent "$ETCD/v2/machines")" ]; then
+            if [ -n "$(curl --cacert /etc/kubernetes/ssl/ca.pem --cert /etc/kubernetes/ssl/etcd.pem --key /etc/kubernetes/ssl/etcd-key.pem --silent "$ETCD/v2/machines")" ]; then
                 local ACTIVE_ETCD=$ETCD
                 break
             fi
@@ -83,7 +83,7 @@ function init_flannel {
             break
         fi
     done
-    RES=$(curl --cacert /etc/kubernetes/ssl/ca.pem --cert /etc/kubernetes/ssl/apiserver.pem --key /etc/kubernetes/ssl/apiserver-key.pem --silent -X PUT -d "value={\"Network\":\"$POD_NETWORK\",\"Backend\":{\"Type\":\"vxlan\"}}" "$ACTIVE_ETCD/v2/keys/coreos.com/network/config?prevExist=false")
+    RES=$(curl --cacert /etc/kubernetes/ssl/ca.pem --cert /etc/kubernetes/ssl/etcd.pem --key /etc/kubernetes/ssl/etcd-key.pem --silent -X PUT -d "value={\"Network\":\"$POD_NETWORK\",\"Backend\":{\"Type\":\"vxlan\"}}" "$ACTIVE_ETCD/v2/keys/coreos.com/network/config?prevExist=false")
     if [ -z "$(echo $RES | grep '"action":"create"')" ] && [ -z "$(echo $RES | grep 'Key already exists')" ]; then
         echo "Unexpected error configuring flannel pod network: $RES"
     fi
@@ -259,8 +259,8 @@ spec:
     - --apiserver-count=3
     - --etcd-servers=https://127.0.0.1:2379
     - --etcd-cafile=/etc/kubernetes/ssl/ca.pem
-    - --etcd-certfile=/etc/kubernetes/ssl/apiserver.pem
-    - --etcd-keyfile=/etc/kubernetes/ssl/apiserver-key.pem
+    - --etcd-certfile=/etc/kubernetes/ssl/etcd.pem
+    - --etcd-keyfile=/etc/kubernetes/ssl/etcd-key.pem
     - --allow-privileged=true
     - --service-cluster-ip-range=${SERVICE_IP_RANGE}
     - --secure-port=443
@@ -838,8 +838,8 @@ data:
           "type": "calico",
           "etcd_endpoints": "__ETCD_ENDPOINTS__",
           "etcd_ca_cert_file": "/etc/kubernetes/ssl/ca.pem",
-          "etcd_cert_file": "/etc/kubernetes/ssl/apiserver.pem",
-          "etcd_key_file": "/etc/kubernetes/ssl/apiserver-key.pem",
+          "etcd_cert_file": "/etc/kubernetes/ssl/etcd.pem",
+          "etcd_key_file": "/etc/kubernetes/ssl/etcd-key.pem",
           "log_level": "info",
           "policy": {
               "type": "k8s",
