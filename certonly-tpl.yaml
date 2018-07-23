@@ -60,12 +60,6 @@ write_files:
   - path: /etc/kubernetes/cni/docker_opts_cni.env
 coreos:
   units:
-    - name: flanneld.service
-      dropins:
-        - name: 50-ssl.conf
-          contents: |
-            [Service]
-            Environment=ETCD_SSL_DIR=/etc/kubernetes/ssl/
     - name: update-engine.service
       mask: true
       command: stop

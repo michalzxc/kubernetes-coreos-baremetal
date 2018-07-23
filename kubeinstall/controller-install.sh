@@ -801,6 +801,36 @@ ExecStartPre=/usr/bin/ln -sf /etc/flannel/options.env /run/flannel/options.env
 EOF
     fi
 
+    local TEMPLATE=/etc/systemd/system/flanneld.service.d/40-ssl.conf
+    if [ ! -f $TEMPLATE ]; then
+        echo "TEMPLATE: $TEMPLATE"
+        mkdir -p $(dirname $TEMPLATE)
+        cat << EOF > $TEMPLATE
+[Service]
+Environment=ETCD_SSL_DIR=/etc/kubernetes/ssl/
+EOF
+    fi
+
+    local TEMPLATE=/etc/systemd/system/flanneld.service.d/40-opt.conf
+    if [ ! -f $TEMPLATE ]; then
+        echo "TEMPLATE: $TEMPLATE"
+        mkdir -p $(dirname $TEMPLATE)
+        cat << EOF > $TEMPLATE
+[Service]
+Environment="FLANNEL_OPTS=--ip-masq=true --etcd-cafile=/etc/kubernetes/ssl/ca.pem --etcd-certfile=/etc/kubernetes/ssl/etcd.pem --etcd-keyfile=/etc/kubernetes/ssl/etcd-key.pem"
+EOF
+    fi
+
+    local TEMPLATE=/etc/systemd/system/flanneld.service.d/40-dns.conf
+    if [ ! -f $TEMPLATE ]; then
+        echo "TEMPLATE: $TEMPLATE"
+        mkdir -p $(dirname $TEMPLATE)
+        cat << EOF > $TEMPLATE
+[Service]
+Environment="RKT_RUN_ARGS=--dns=host"
+EOF
+    fi
+
     local TEMPLATE=/etc/systemd/system/docker.service.d/40-flannel.conf
     if [ ! -f $TEMPLATE ]; then
         echo "TEMPLATE: $TEMPLATE"
