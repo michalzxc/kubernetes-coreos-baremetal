@@ -301,6 +301,16 @@ Environment="RKT_RUN_ARGS=--dns=host"
 EOF
     fi
 
+    local TEMPLATE=/etc/systemd/system/flanneld.service.d/40-version.conf
+    if [ ! -f $TEMPLATE ]; then
+        echo "TEMPLATE: $TEMPLATE"
+        mkdir -p $(dirname $TEMPLATE)
+        cat << EOF > $TEMPLATE
+[Service]
+Environment="FLANNEL_IMAGE_TAG=v0.9.1"
+EOF
+    fi
+
     local TEMPLATE=/etc/systemd/system/docker.service.d/40-flannel.conf
     if [ ! -f $TEMPLATE ]; then
         echo "TEMPLATE: $TEMPLATE"
