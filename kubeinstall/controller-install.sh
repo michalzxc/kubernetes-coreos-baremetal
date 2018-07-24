@@ -334,7 +334,7 @@ spec:
     - controller-manager
     - --master=http://127.0.0.1:8080
     - --allocate-node-cidrs=true
-    - --pod-network-cidr=${POD_NETWORK}
+    - --cluster-cidr=${POD_NETWORK}
     - --leader-elect=true
     - --service-account-private-key-file=/etc/kubernetes/ssl/accounts-key.pem
     - --root-ca-file=/etc/kubernetes/ssl/ca.pem
