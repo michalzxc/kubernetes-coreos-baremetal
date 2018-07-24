@@ -57,6 +57,11 @@ write_files:
     permissions: 0644
     content: |
       iscsi_tcp
+  - path: /etc/modules-load.d/ip_vs.conf
+    owner: "root"
+    permissions: 0644
+    content: |
+      ip_vs
   - path: /etc/kubernetes/cni/docker_opts_cni.env
 coreos:
   units:

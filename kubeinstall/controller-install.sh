@@ -1234,7 +1234,7 @@ function start_calico {
     docker run --rm --net=host -v /srv/kubernetes/manifests:/host/manifests $HYPERKUBE_IMAGE_REPO:$K8S_VER /hyperkube kubectl apply -f /host/manifests/calico.yaml
 }
 
-modprobe iscsi_tcp
+modprobe iscsi_tcp ip_vs
 
 init_config
 init_templates
