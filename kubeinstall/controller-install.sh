@@ -956,6 +956,8 @@ spec:
             # Don't enable BGP.
             - name: CALICO_NETWORKING_BACKEND
               value: "none"
+            - name: FELIX_IPTABLESALLOWACTION
+              value: "RETURN"
             # Cluster type to identify the deployment type
             - name: CLUSTER_TYPE
               value: "k8s,canal"
