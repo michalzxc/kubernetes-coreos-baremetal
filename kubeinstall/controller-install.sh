@@ -217,7 +217,6 @@ spec:
     - proxy
     - --master=http://127.0.0.1:8080
     - --cluster-cidr=${POD_NETWORK}
-    - --proxy-mode=iptables
     securityContext:
       privileged: true
     volumeMounts:
