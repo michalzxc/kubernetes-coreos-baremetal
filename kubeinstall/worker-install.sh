@@ -183,6 +183,7 @@ spec:
     - --master=${CONTROLLER_ENDPOINT}
     - --cluster-cidr=${POD_NETWORK}
     - --kubeconfig=/etc/kubernetes/worker-kubeconfig.yaml
+    - --proxy-mode=iptables
     securityContext:
       privileged: true
     volumeMounts:
