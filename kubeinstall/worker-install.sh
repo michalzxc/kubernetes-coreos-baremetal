@@ -29,11 +29,20 @@ export DNS_SERVICE_IP=10.3.0.10
 # The above settings can optionally be overridden using an environment file:
 ENV_FILE=/run/coreos-kubernetes/options.env
 
-# To run a self hosted Calico install it needs to be able to write to the CNI dir
-export CALICO_OPTS="--volume cni-bin,kind=host,source=/opt/cni/bin \
-                        --mount volume=cni-bin,target=/opt/cni/bin"
+CALICO=false
 
-mkdir -p /var/lib/calico/
+if [ ! -z "$(echo "$CALICO"|grep "true")" ]; then
+  # To run a self hosted Calico install it needs to be able to write to the CNI dir
+    export CALICO_OPTS="--volume cni-bin,kind=host,source=/opt/cni/bin \
+                        --mount volume=cni-bin,target=/opt/cni/bin \
+                        --volume varlibcalico,kind=host,source=/var/lib/calico/ \
+                        --mount volume=varlibcalico,target=/var/lib/calico/"
+
+    export KUBELET_CALICO_CNI="--network-plugin=cni \
+                               --cni-conf-dir=/etc/kubernetes/cni/net.d"
+
+    mkdir -p /var/lib/calico/
+fi
 
 function init_config {
     local REQUIRED=( 'ADVERTISE_IP' 'ETCD_ENDPOINTS' 'CONTROLLER_ENDPOINT' 'DNS_SERVICE_IP' 'K8S_VER' 'HYPERKUBE_IMAGE_REPO' )
@@ -83,8 +92,6 @@ Environment="RKT_RUN_ARGS=--uuid-file-save=${uuid_file} \
   --mount volume=iscsid,target=/usr/sbin/iscsid \
   --volume varlibkubelet,kind=host,source=/var/lib/kubelet/ \
   --mount volume=varlibkubelet,target=/var/lib/kubelet/ \
-  --volume varlibcalico,kind=host,source=/var/lib/calico/ \
-  --mount volume=varlibcalico,target=/var/lib/calico/ \
   ${CALICO_OPTS}"
 ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
 ExecStartPre=/usr/bin/mkdir -p /var/log/containers
@@ -95,8 +102,6 @@ ExecStart=/usr/lib/coreos/kubelet-wrapper \
   --hostname-override=%HOST% \
   --node-labels=kubernetes.io/role=node \
   --container-runtime=docker \
-  --network-plugin=cni \
-  --cni-conf-dir=/etc/kubernetes/cni/net.d \
   --register-node=true \
   --allow-privileged=true \
   --pod-manifest-path=/etc/kubernetes/manifests \
@@ -107,6 +112,7 @@ ExecStart=/usr/lib/coreos/kubelet-wrapper \
   --tls-cert-file=/etc/kubernetes/ssl/worker.pem \
   --tls-private-key-file=/etc/kubernetes/ssl/worker-key.pem \
   --volume-plugin-dir=/var/lib/kubelet/volumeplugins
+  ${KUBELET_CALICO_CNI}
 ExecStop=-/usr/bin/rkt stop --uuid-file=${uuid_file}
 Restart=always
 RestartSec=10

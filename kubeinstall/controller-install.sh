@@ -35,11 +35,20 @@ export DNS_SERVICE_IP=10.3.0.10
 # The above settings can optionally be overridden using an environment file:
 ENV_FILE=/run/coreos-kubernetes/options.env
 
-# To run a self hosted Calico install it needs to be able to write to the CNI dir
-export CALICO_OPTS="--volume cni-bin,kind=host,source=/opt/cni/bin \
-                        --mount volume=cni-bin,target=/opt/cni/bin"
+CALICO=false
 
-mkdir -p /var/lib/calico/
+# To run a self hosted Calico install it needs to be able to write to the CNI dir
+if [ ! -z "$(echo "$CALICO"|grep "true")" ]; then
+    export CALICO_OPTS="--volume cni-bin,kind=host,source=/opt/cni/bin \
+                        --mount volume=cni-bin,target=/opt/cni/bin \
+                        --volume varlibcalico,kind=host,source=/var/lib/calico/ \
+                        --mount volume=varlibcalico,target=/var/lib/calico/"
+
+    export KUBELET_CALICO_CNI="--network-plugin=cni \
+                               --cni-conf-dir=/etc/kubernetes/cni/net.d"
+
+    mkdir -p /var/lib/calico/
+fi
 
 function init_config {
     local REQUIRED=('ADVERTISE_IP' 'POD_NETWORK' 'ETCD_ENDPOINTS' 'SERVICE_IP_RANGE' 'K8S_SERVICE_IP' 'DNS_SERVICE_IP' 'K8S_VER' 'HYPERKUBE_IMAGE_REPO')
@@ -145,8 +154,6 @@ Environment="RKT_RUN_ARGS=--uuid-file-save=${uuid_file} \
   --mount volume=iscsid,target=/usr/sbin/iscsid \
   --volume varlibkubelet,kind=host,source=/var/lib/kubelet/ \
   --mount volume=varlibkubelet,target=/var/lib/kubelet/ \
-  --volume varlibcalico,kind=host,source=/var/lib/calico/ \
-  --mount volume=varlibcalico,target=/var/lib/calico/ \
   ${CALICO_OPTS}"
 ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
 ExecStartPre=/usr/bin/mkdir -p /opt/cni/bin
@@ -158,14 +165,13 @@ ExecStart=/usr/lib/coreos/kubelet-wrapper \
   --register-with-taints=node-role.kubernetes.io/master=true:NoSchedule \
   --node-labels=kubernetes.io/role=master \
   --container-runtime=docker \
-  --network-plugin=cni \
-  --cni-conf-dir=/etc/kubernetes/cni/net.d \
   --allow-privileged=true \
   --pod-manifest-path=/etc/kubernetes/manifests \
   --hostname-override=${ADVERTISE_IP} \
   --cluster_dns=${DNS_SERVICE_IP} \
   --cluster_domain=cluster.local \
-  --volume-plugin-dir=/var/lib/kubelet/volumeplugins
+  --volume-plugin-dir=/var/lib/kubelet/volumeplugins \
+  ${KUBELET_CALICO_CNI}
 ExecStop=-/usr/bin/rkt stop --uuid-file=${uuid_file}
 Restart=always
 RestartSec=10
@@ -858,6 +864,7 @@ EnvironmentFile=/etc/kubernetes/cni/docker_opts_cni.env
 EOF
     fi
 
+if [ ! -z "$(echo "$CALICO"|grep "true")" ]; then
     local TEMPLATE=/srv/kubernetes/manifests/calico.yaml
     echo "TEMPLATE: $TEMPLATE"
     mkdir -p $(dirname $TEMPLATE)
@@ -1199,6 +1206,7 @@ metadata:
   namespace: kube-system
 
 EOF
+fi
 }
 
 function start_addons {
@@ -1251,7 +1259,9 @@ systemctl enable flanneld; systemctl start flanneld
 
 systemctl enable kubelet; systemctl start kubelet
 
-start_calico
+if [ ! -z "$(echo "$CALICO"|grep "true")" ]; then
+  start_calico
+fi
 
 start_addons
 
