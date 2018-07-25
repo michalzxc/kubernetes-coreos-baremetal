@@ -3,15 +3,9 @@
 hostname: %HOST%
 # include one or more SSH public keys
 ssh_authorized_keys:
-  - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDZYL/631qBTScS+sQb9L7GKHczu1c9+ObEsmE5xyQBF9g1i0SiB/v1IxligpGMSFu1squfjsOZrBdGGCBaZ9rJQt7q1Uvi95QXA7ka6sAbxPvAppWypkutdytX9PY009C25SXzhG8Wo9MbcZF8g0dYJEyPnC+7OMf0Uz5EsqFGxSWhIqUSAc92mMye2YkI0Y1y+HUJUNAYjOK7rnaV34yL+bqOc3HQ/lFoCEpJ7AQmj+373z/CLRGJo+6ckBkptlFU2jCCbjeXE998MtBQ/OhjdibJBiQWuwiCf8ZQ1ggAVz4vl5gvMYRA9fC9MFW1ke2BbpnkAJZeUBDwM//TsK8R MonkeySphere2016-12-06T16:05:42 Michal Rydlikowski (Personal Secondary Email Address) <Michal.Rydlikowski@gmail.com>
+%ROOTSSHKEYS%
 users:
-  - name: "michalzxc"
-    passwd: "$6$BP4OCopq$QZujrmUwUQvD3GAGrjNOLJLz.o0./MXxL3KM1509jgxd2RxRnia75G8QL2cf72B5rTxycg30zGIx61lNyoqtN0"
-    groups:
-     - "sudo"
-     - "docker"
-    ssh_authorized_keys:
-      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDZYL/631qBTScS+sQb9L7GKHczu1c9+ObEsmE5xyQBF9g1i0SiB/v1IxligpGMSFu1squfjsOZrBdGGCBaZ9rJQt7q1Uvi95QXA7ka6sAbxPvAppWypkutdytX9PY009C25SXzhG8Wo9MbcZF8g0dYJEyPnC+7OMf0Uz5EsqFGxSWhIqUSAc92mMye2YkI0Y1y+HUJUNAYjOK7rnaV34yL+bqOc3HQ/lFoCEpJ7AQmj+373z/CLRGJo+6ckBkptlFU2jCCbjeXE998MtBQ/OhjdibJBiQWuwiCf8ZQ1ggAVz4vl5gvMYRA9fC9MFW1ke2BbpnkAJZeUBDwM//TsK8R MonkeySphere2016-12-06T16:05:42 Michal Rydlikowski (Personal Secondary Email Address) <Michal.Rydlikowski@gmail.com>
+%USERS%
 write_files:
   - path: /etc/kubernetes/install.sh
     owner: "root"
@@ -33,6 +27,16 @@ write_files:
     permissions: 0600
     content: |
 %NODE_KEY_PEM%
+  - path: /etc/kubernetes/ssl/etcd.pem
+    owner: "root"
+    permissions: 0600
+    content: |
+%NODE_PEM%
+  - path: /etc/kubernetes/ssl/etcd-key.pem
+    owner: "root"
+    permissions: 0600
+    content: |
+%NODE_KEY_PEM%
   - path: /etc/kubernetes/ssl/accounts.pem
     owner: "root"
     permissions: 0600
@@ -43,30 +47,21 @@ write_files:
     permissions: 0600
     content: |
 %ACCOUNTS_KEY_PEM%
-  - path: /etc/nsswitch.conf
+  - path: /etc/systemd/system/etcd-member.service.d/20-cl-etcd-member.conf
     owner: "root"
-    permissions: 0644
+    permissions: 0600
     content: |
-      # /etc/nsswitch.conf:
-      passwd:      files usrfiles
-      shadow:      files usrfiles
-      group:       files usrfiles
-      hosts:       files usrfiles resolve dns
-      networks:    files usrfiles dns
-      services:    files usrfiles
-      protocols:   files usrfiles
-      rpc:         files usrfiles
-      ethers:      files
-      netmasks:    files
-      netgroup:    files
-      bootparams:  files
-      automount:   files
-      aliases:     files
+%ETCDSECTION%
   - path: /etc/modules-load.d/iscsi.conf
     owner: "root"
     permissions: 0644
     content: |
       iscsi_tcp
+  - path: /etc/modules-load.d/ip_vs.conf
+    owner: "root"
+    permissions: 0644
+    content: |
+      ip_vs
   - path: /etc/kubernetes/cni/docker_opts_cni.env
 coreos:
   units:
@@ -80,44 +75,20 @@ coreos:
       mask: true
       command: stop
 %NETSECTION%
-%CLOUDSECTION%
-    - name: etcd2.service
-      command: start
-      enable: true
-      content: |
-        [Unit]
-        Description=etcd2
-        Conflicts=etcd.service
-        [Service]
-        User=etcd
-        Type=notify
-        Environment="ETCD_ADVERTISE_CLIENT_URLS=http://%ETCDADVERTISEIP%:2379"
-        Environment="ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379"
-        Environment="ETCD_LISTEN_PEER_URLS=http://%IP%:2380"
-        Environment=ETCD_DATA_DIR=/var/lib/etcd2
-        Environment=ETCD_NAME=%HOST%
-        Environment=ETCD_INITIAL_CLUSTER_STATE=%ETCD_INITIAL_CLUSTER_STATE%
-        Environment=ETCD_INITIAL_CLUSTER=%ETCD_INITIAL_CLUSTER%
-        Environment="ETCD_INITIAL_ADVERTISE_PEER_URLS=http://%IP%:2380"
-        ExecStart=/usr/bin/etcd2
-        Restart=always
-        RestartSec=10s
-        LimitNOFILE=40000
-        TimeoutStartSec=0
-        [Install]
-        WantedBy=multi-user.target
     - name: rpc-statd.service
       command: start
       enable: true
+    - name: etcd-member.service
+      command: %ETCDCOMMAND%
+      enable: %ETCDENABLE%
     - name: kubeinstall.service
       command: start
       content: |
         [Unit]
         Description=K8S installer
-        After=etcd2.service
-        Requires=etcd2.service
 
         [Service]
+        TimeoutStartSec=infinity
         Type=oneshot
         Environment=ADVERTISE_IP=%ADVERTISE_IP%
         ExecStart=/etc/kubernetes/install.sh

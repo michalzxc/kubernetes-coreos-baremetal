@@ -13,3 +13,4 @@ DNS.3 = kubernetes.default.svc
 DNS.4 = kubernetes.default.svc.cluster.local
 DNS.5 = $ENV::CNAME
 IP.1 = 10.3.0.1
+IP.2 = 127.0.0.1
