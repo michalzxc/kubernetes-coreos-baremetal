@@ -78,7 +78,7 @@ coreos:
     - name: rpc-statd.service
       command: start
       enable: true
-    - name: etcd-member
+    - name: etcd-member.service
       command: %ETCDCOMMAND%
       enable: %ETCDENABLE%
     - name: kubeinstall.service

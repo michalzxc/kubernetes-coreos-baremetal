@@ -165,7 +165,7 @@ if [ $NOETCDCLUSTER -eq 1 ]; then
 	etcdenable="false"
 	etcdcommand="stop"
 else
-	etcdenable="false"
+	etcdenable="true"
 	etcdcommand="start"
 etcdsection=$(cat << EOF
 [Service]
