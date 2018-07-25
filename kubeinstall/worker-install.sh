@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+if [ -f /etc/script_installed ]; then
+  echo "Already installed - file exist: /etc/script_installed"
+  exit 0
+fi
+
 systemctl start kubeinstallhealth.timer
 
 # List of etcd servers (http://ip:port), comma separated
@@ -351,3 +356,5 @@ systemctl daemon-reload
 systemctl enable flanneld; systemctl start flanneld
 
 systemctl enable kubelet; systemctl start kubelet
+
+/etc/script_installed

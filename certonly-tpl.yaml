@@ -78,15 +78,17 @@ coreos:
     - name: rpc-statd.service
       command: start
       enable: true
+    - name: etcd-member
+      command: %ETCDCOMMAND%
+      enable: %ETCDENABLE%
     - name: kubeinstall.service
       command: start
       content: |
         [Unit]
         Description=K8S installer
-        After=etcd-member.service
-        Requires=etcd-member.service
 
         [Service]
+        TimeoutStartSec=infinity
         Type=oneshot
         Environment=ADVERTISE_IP=%ADVERTISE_IP%
         ExecStart=/etc/kubernetes/install.sh

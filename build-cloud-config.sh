@@ -162,7 +162,11 @@ cat certonly-tpl.yaml | sed -e "s/%NETSECTION%/$netconf/g" >  tmp/certonly-tpl.y
 
 if [ $NOETCDCLUSTER -eq 1 ]; then
 	etcdsection=""
+	etcdenable="false"
+	etcdcommand="stop"
 else
+	etcdenable="false"
+	etcdcommand="start"
 etcdsection=$(cat << EOF
 [Service]
 Environment="ETCD_IMAGE_TAG=v3.2.0"
@@ -190,8 +194,10 @@ EOF
 )
 etcdsection=$(echo "$etcdsection"|sed -e 's/\(.*\)/      \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n'|sed 's/\\n$//g')
 fi
-cat tmp/certonly-tpl.yaml2a | sed -e "s/%ETCDSECTION%/$etcdsection/g" >  tmp/certonly-tpl.yaml2
-
+cat tmp/certonly-tpl.yaml2a | sed -e "s/%ETCDSECTION%/$etcdsection/g" >  tmp/certonly-tpl.yaml2s
+cat tmp/certonly-tpl.yaml2s | sed -e "s/%ETCDENABLE%/$etcdenable/g" >  tmp/certonly-tpl.yaml2d
+cat tmp/certonly-tpl.yaml2d | sed -e "s/%ETCDENABLE%/$etcdenable/g" >  tmp/certonly-tpl.yaml2e
+cat tmp/certonly-tpl.yaml2e | sed -e "s/%ETCDCOMMAND%/$etcdcommand/g" >  tmp/certonly-tpl.yaml2
 
 #ROOT SSH keys
 rootsshkeys=$(cat ssh/root|sed -e 's/\(.*\)/  \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n'|sed 's/\\n$//g')
