@@ -30,12 +30,12 @@ fi
 
 password="$(cat tmp/sudopassword)"
 
-#echo "Pull new version"
-#git pull
+echo "Pull new version"
+git pull
 
-#echo "[START] Regenerate config"
-#./regenerateconfigs.sh
-#echo "[END] Regenerate config"
+echo "[START] Regenerate config"
+./regenerateconfigs.sh
+echo "[END] Regenerate config"
 
 export RUNNING="$(virshexec list --all|grep -v "Name"|awk '{print $2}')"
 echo "Refresh Volumes"
