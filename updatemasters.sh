@@ -6,6 +6,7 @@ if [ ! -f inventory/masters ]; then
 fi
 
 masters=$(cat inventory/masters|awk -F'=' '{print $1}')
+countmmasters=$(cat inventory/masters|awk -F'=' '{print $1}'|wc -l)
 
 ALLENDPOINTS="$(cat inventory/masters|egrep -o "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"|sed "s/^/https:\\/\\//g"|sed "s/$/:2379/g"|xargs|sed 's/ /,/g')"
 if [ -z "$(echo $ALLENDPOINTS)" ]; then
@@ -26,6 +27,7 @@ for HOST in $masters; do
   echo ${ALLENDPOINTS}
   sed -i "s#%ETCD_INITIAL_CLUSTER%#${ms}#g" inventory/node-${HOST}/cloud-config/openstack/latest/user_data
   sed -i "s#%ETCD_CALICO%#${ALLENDPOINTS}#g" inventory/node-${HOST}/cloud-config/openstack/latest/user_data
+  sed -i "s#%COUNTMASTERS%#${countmmasters}#g" inventory/node-${HOST}/cloud-config/openstack/latest/user_data
   sed -i "s#export ETCD_ENDPOINTS=.*#export ETCD_ENDPOINTS=${ALLENDPOINTS}#g" inventory/node-${HOST}/cloud-config/openstack/latest/user_data
   ./build-image.sh inventory/node-${HOST}
 done
