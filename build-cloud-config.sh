@@ -169,7 +169,7 @@ else
 	etcdcommand="start"
 etcdsection=$(cat << EOF
 [Service]
-Environment="ETCD_IMAGE_TAG=v3.2.0"
+Environment="ETCD_IMAGE_TAG=v3.2.2"
 Environment="ETCD_USER=root"
 Environment="ETCD_DATA_DIR=/var/lib/etcd"
 Environment="ETCD_SSL_DIR=/etc/kubernetes/ssl/"
