@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+if [ -f /etc/script_installed ]; then
+  echo "Already installed - file exist: /etc/script_installed"
+  exit 0
+fi
+
 systemctl start kubeinstallhealth.timer
 
 # List of etcd servers (http://ip:port), comma separated
@@ -29,11 +34,20 @@ export DNS_SERVICE_IP=10.3.0.10
 # The above settings can optionally be overridden using an environment file:
 ENV_FILE=/run/coreos-kubernetes/options.env
 
-# To run a self hosted Calico install it needs to be able to write to the CNI dir
-export CALICO_OPTS="--volume cni-bin,kind=host,source=/opt/cni/bin \
-                        --mount volume=cni-bin,target=/opt/cni/bin"
+CALICO=false
 
-# -------------
+if [ ! -z "$(echo "$CALICO"|grep "true")" ]; then
+  # To run a self hosted Calico install it needs to be able to write to the CNI dir
+    export CALICO_OPTS="--volume cni-bin,kind=host,source=/opt/cni/bin \
+                        --mount volume=cni-bin,target=/opt/cni/bin \
+                        --volume varlibcalico,kind=host,source=/var/lib/calico/ \
+                        --mount volume=varlibcalico,target=/var/lib/calico/"
+
+    export KUBELET_CALICO_CNI="--network-plugin=cni \
+                               --cni-conf-dir=/etc/kubernetes/cni/net.d"
+
+    mkdir -p /var/lib/calico/
+fi
 
 function init_config {
     local REQUIRED=( 'ADVERTISE_IP' 'ETCD_ENDPOINTS' 'CONTROLLER_ENDPOINT' 'DNS_SERVICE_IP' 'K8S_VER' 'HYPERKUBE_IMAGE_REPO' )
@@ -92,6 +106,7 @@ ExecStart=/usr/lib/coreos/kubelet-wrapper \
   --container-runtime=docker \
   --hostname-override=%HOST% \
   --node-labels=kubernetes.io/role=node \
+  --container-runtime=docker \
   --register-node=true \
   --allow-privileged=true \
   --pod-manifest-path=/etc/kubernetes/manifests \
@@ -102,6 +117,7 @@ ExecStart=/usr/lib/coreos/kubelet-wrapper \
   --tls-cert-file=/etc/kubernetes/ssl/worker.pem \
   --tls-private-key-file=/etc/kubernetes/ssl/worker-key.pem \
   --volume-plugin-dir=/var/lib/kubelet/volumeplugins
+  ${KUBELET_CALICO_CNI}
 ExecStop=-/usr/bin/rkt stop --uuid-file=${uuid_file}
 Restart=always
 RestartSec=10
@@ -271,6 +287,46 @@ ExecStartPre=/usr/bin/ln -sf /etc/flannel/options.env /run/flannel/options.env
 EOF
     fi
 
+    local TEMPLATE=/etc/systemd/system/flanneld.service.d/40-ssl.conf
+    if [ ! -f $TEMPLATE ]; then
+        echo "TEMPLATE: $TEMPLATE"
+        mkdir -p $(dirname $TEMPLATE)
+        cat << EOF > $TEMPLATE
+[Service]
+Environment=ETCD_SSL_DIR=/etc/kubernetes/ssl/
+EOF
+    fi
+
+    local TEMPLATE=/etc/systemd/system/flanneld.service.d/40-opt.conf
+    if [ ! -f $TEMPLATE ]; then
+        echo "TEMPLATE: $TEMPLATE"
+        mkdir -p $(dirname $TEMPLATE)
+        cat << EOF > $TEMPLATE
+[Service]
+Environment="FLANNEL_OPTS=--ip-masq=true --etcd-cafile=/etc/kubernetes/ssl/ca.pem --etcd-certfile=/etc/kubernetes/ssl/etcd.pem --etcd-keyfile=/etc/kubernetes/ssl/etcd-key.pem"
+EOF
+    fi
+
+    local TEMPLATE=/etc/systemd/system/flanneld.service.d/40-dns.conf
+    if [ ! -f $TEMPLATE ]; then
+        echo "TEMPLATE: $TEMPLATE"
+        mkdir -p $(dirname $TEMPLATE)
+        cat << EOF > $TEMPLATE
+[Service]
+Environment="RKT_RUN_ARGS=--dns=host"
+EOF
+    fi
+
+    local TEMPLATE=/etc/systemd/system/flanneld.service.d/40-version.conf
+    if [ ! -f $TEMPLATE ]; then
+        echo "TEMPLATE: $TEMPLATE"
+        mkdir -p $(dirname $TEMPLATE)
+        cat << EOF > $TEMPLATE
+[Service]
+Environment="FLANNEL_IMAGE_TAG=v0.9.1"
+EOF
+    fi
+
     local TEMPLATE=/etc/systemd/system/docker.service.d/40-flannel.conf
     if [ ! -f $TEMPLATE ]; then
         echo "TEMPLATE: $TEMPLATE"
@@ -301,14 +357,4 @@ systemctl enable flanneld; systemctl start flanneld
 
 systemctl enable kubelet; systemctl start kubelet
 
-if [ -f /etc/systemd/system/openstackhosts.timer ]; then
-  while [ 1 -eq 1 ]; do
-    basehost=$(hostname|sed 's/worker[0-9]//g'|sed 's/controller[0-9]//g')
-    controllerscount=$(grep $basehost /etc/hosts|grep controller|wc -l)
-    if [ $controllerscount -ge 3 ]; then
-      systemctl stop openstackhosts.timer; systemctl stop openstackhosts.service
-      break
-    fi
-    sleep 5
-  done
-fi
+/etc/script_installed

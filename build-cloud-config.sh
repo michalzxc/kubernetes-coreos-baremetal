@@ -6,6 +6,8 @@ if [ "$#" != "2" ] && [ "$#" != "3" ]; then
 	exit 1
 fi
 
+mkdir -p tmp
+
 # setting vars from args
 HOST=$1
 IP=$(echo "$2"| cut -d'/' -f1)
@@ -35,32 +37,52 @@ if [ ! -z "$(echo "$1"|grep "controller")" ]; then
 	if [ ! -f inventory/gw ]; then
 		GW=$3
 		echo $GW>inventory/gw
-		openssl genrsa -out ssl/accounts-key.pem 2048
+		if [ ! -f ssl/accounts-key.pem ]; then
+			openssl genrsa -out ssl/accounts-key.pem 2048
+		fi
 		if [ ! -z "$(echo "$IP"|egrep -o "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+")" ]; then
-			IP=${IP} openssl req -new -key ssl/accounts-key.pem -out ssl/accounts-key.csr -subj "/CN=kube-apiserver" -config master-openssl.cnf
-			IP=${IP} openssl x509 -req -in ssl/accounts-key.csr  -CA ssl/ca.pem -CAkey ssl/ca-key.pem -CAcreateserial -out ssl/accounts.pem -days 3650 -extensions v3_req -extfile master-openssl.cnf
+			if [ ! -f ssl/accounts-key.csr ]; then
+				IP=${IP} openssl req -new -key ssl/accounts-key.pem -out ssl/accounts-key.csr -subj "/CN=kube-apiserver" -config master-openssl.cnf
+			fi
+			if [ ! -f ssl/accounts.pem ]; then
+				IP=${IP} openssl x509 -req -in ssl/accounts-key.csr  -CA ssl/ca.pem -CAkey ssl/ca-key.pem -CAcreateserial -out ssl/accounts.pem -days 3650 -extensions v3_req -extfile master-openssl.cnf
+			fi
 		else
-			CNAME=${IP} openssl req -new -key ssl/accounts-key.pem -out ssl/accounts-key.csr -subj "/CN=kube-apiserver" -config master-opensslcname.cnf
-			CNAME=${IP} openssl x509 -req -in ssl/accounts-key.csr  -CA ssl/ca.pem -CAkey ssl/ca-key.pem -CAcreateserial -out ssl/accounts.pem -days 3650 -extensions v3_req -extfile master-opensslcname.cnf
+			if [ ! -f ssl/accounts-key.csr ]; then
+				CNAME=${IP} openssl req -new -key ssl/accounts-key.pem -out ssl/accounts-key.csr -subj "/CN=kube-apiserver" -config master-opensslcname.cnf
+			fi
+			if [ ! -f ssl/accounts.pem ]; then
+				CNAME=${IP} openssl x509 -req -in ssl/accounts-key.csr  -CA ssl/ca.pem -CAkey ssl/ca-key.pem -CAcreateserial -out ssl/accounts.pem -days 3650 -extensions v3_req -extfile master-opensslcname.cnf
+			fi
 		fi
 	fi
 		ETCD_INITIAL_CLUSTER_STATE=new
-	echo "$1=http://${HOSTIP}:2380">>inventory/masters
+	echo "$1=https://${HOSTIP}:2380">>inventory/masters
 	NODETYPE="apiserver"
 	INSTALLURL=kubeinstall/controller-install.sh
 	NOETCDCLUSTER=0
 
-	openssl genrsa -out inventory/node-${HOST}/ssl/apiserver-key.pem 2048
+	if [ ! -f inventory/node-${HOST}/ssl/apiserver-key.pem ]; then
+		openssl genrsa -out inventory/node-${HOST}/ssl/apiserver-key.pem 2048
+	fi
 	if [ ! -z "$(echo "$IP"|egrep -o "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+")" ]; then
-		IP=${IP} openssl req -new -key inventory/node-${HOST}/ssl/apiserver-key.pem -out inventory/node-${HOST}/ssl/apiserver.csr -subj "/CN=kube-apiserver" -config master-openssl.cnf
-		IP=${IP} openssl x509 -req -in inventory/node-${HOST}/ssl/apiserver.csr -CA ssl/ca.pem -CAkey ssl/ca-key.pem -CAcreateserial -out inventory/node-${HOST}/ssl/apiserver.pem -days 3650 -extensions v3_req -extfile master-openssl.cnf
+		if [ ! -f inventory/node-${HOST}/ssl/apiserver.csr ]; then
+			IP=${IP} openssl req -new -key inventory/node-${HOST}/ssl/apiserver-key.pem -out inventory/node-${HOST}/ssl/apiserver.csr -subj "/CN=kube-apiserver" -config master-openssl.cnf
+		fi
+		if [ ! -f inventory/node-${HOST}/ssl/apiserver.pem ]; then
+			IP=${IP} openssl x509 -req -in inventory/node-${HOST}/ssl/apiserver.csr -CA ssl/ca.pem -CAkey ssl/ca-key.pem -CAcreateserial -out inventory/node-${HOST}/ssl/apiserver.pem -days 3650 -extensions v3_req -extfile master-openssl.cnf
+		fi
 	else
-		CNAME=${IP} openssl req -new -key inventory/node-${HOST}/ssl/apiserver-key.pem -out inventory/node-${HOST}/ssl/apiserver.csr -subj "/CN=kube-apiserver" -config master-opensslcname.cnf
-		CNAME=${IP} openssl x509 -req -in inventory/node-${HOST}/ssl/apiserver.csr -CA ssl/ca.pem -CAkey ssl/ca-key.pem -CAcreateserial -out inventory/node-${HOST}/ssl/apiserver.pem -days 3650 -extensions v3_req -extfile master-opensslcname.cnf
+		if [ ! -f inventory/node-${HOST}/ssl/apiserver.csr ]; then
+			CNAME=${IP} openssl req -new -key inventory/node-${HOST}/ssl/apiserver-key.pem -out inventory/node-${HOST}/ssl/apiserver.csr -subj "/CN=kube-apiserver" -config master-opensslcname.cnf
+		fi
+		if [ ! -f inventory/node-${HOST}/ssl/apiserver.pem ]; then
+			CNAME=${IP} openssl x509 -req -in inventory/node-${HOST}/ssl/apiserver.csr -CA ssl/ca.pem -CAkey ssl/ca-key.pem -CAcreateserial -out inventory/node-${HOST}/ssl/apiserver.pem -days 3650 -extensions v3_req -extfile master-opensslcname.cnf
+		fi
 	fi
 	echo "$HOSTIP/$PREFIX" > inventory/node-${HOST}/ip
 	echo "creating CoreOS cloud-config for controller ${HOST}(${IP})"
-	ENDPOINTS="http://${IP}:2379"
+	ENDPOINTS="https://${IP}:2379"
 else
 	# configure worker
 	ADVERTISE_IP=${IP}
@@ -70,25 +92,35 @@ else
 	INSTALLURL=kubeinstall/worker-install.sh
 	NOETCDCLUSTER=1
 
-	openssl genrsa -out inventory/node-${HOST}/ssl/worker-key.pem 2048
+	if [ ! -f inventory/node-${HOST}/ssl/worker-key.pem ]; then
+		openssl genrsa -out inventory/node-${HOST}/ssl/worker-key.pem 2048
+	fi
 	if [ ! -z "$(echo "$IP"|egrep -o "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+")" ]; then
-		WORKER_IP=${IP} openssl req -new -key inventory/node-${HOST}/ssl/worker-key.pem -out inventory/node-${HOST}/ssl/worker.csr -subj "/CN=${HOST}" -config worker-openssl.cnf
-		WORKER_IP=${IP} openssl x509 -req -in inventory/node-${HOST}/ssl/worker.csr -CA ssl/ca.pem -CAkey ssl/ca-key.pem -CAcreateserial -out inventory/node-${HOST}/ssl/worker.pem -days 3650 -extensions v3_req -extfile worker-openssl.cnf
+		if [ ! -f inventory/node-${HOST}/ssl/worker.csr ]; then
+			WORKER_IP=${IP} openssl req -new -key inventory/node-${HOST}/ssl/worker-key.pem -out inventory/node-${HOST}/ssl/worker.csr -subj "/CN=${HOST}" -config worker-openssl.cnf
+		fi
+		if [ ! -f inventory/node-${HOST}/ssl/worker.pem ]; then
+			WORKER_IP=${IP} openssl x509 -req -in inventory/node-${HOST}/ssl/worker.csr -CA ssl/ca.pem -CAkey ssl/ca-key.pem -CAcreateserial -out inventory/node-${HOST}/ssl/worker.pem -days 3650 -extensions v3_req -extfile worker-openssl.cnf
+		fi
 	else
-		WORKER_CNAME=${IP} openssl req -new -key inventory/node-${HOST}/ssl/worker-key.pem -out inventory/node-${HOST}/ssl/worker.csr -subj "/CN=${HOST}" -config worker-opensslcname.cnf
-		WORKER_CNAME=${IP} openssl x509 -req -in inventory/node-${HOST}/ssl/worker.csr -CA ssl/ca.pem -CAkey ssl/ca-key.pem -CAcreateserial -out inventory/node-${HOST}/ssl/worker.pem -days 3650 -extensions v3_req -extfile worker-opensslcname.cnf
+		if [ ! -f inventory/node-${HOST}/ssl/worker.csr ]; then
+			WORKER_CNAME=${IP} openssl req -new -key inventory/node-${HOST}/ssl/worker-key.pem -out inventory/node-${HOST}/ssl/worker.csr -subj "/CN=${HOST}" -config worker-opensslcname.cnf
+		fi
+		if [ ! -f inventory/node-${HOST}/ssl/worker.pem ]; then
+			WORKER_CNAME=${IP} openssl x509 -req -in inventory/node-${HOST}/ssl/worker.csr -CA ssl/ca.pem -CAkey ssl/ca-key.pem -CAcreateserial -out inventory/node-${HOST}/ssl/worker.pem -days 3650 -extensions v3_req -extfile worker-opensslcname.cnf
+		fi
 	fi
 	echo "$HOSTIP/$PREFIX" > inventory/node-${HOST}/ip
 	echo "creating CoreOS cloud-config for $HOST with K8S version $K8S_VER to join $MASTER"
 	IP=${MASTER} # for etcd2 config
 
-	ENDPOINTS="$(cat inventory/masters|awk -F'//' '{print $2}'|awk -F':' '{print $1}'|sed "s/^/http:\\/\\//g"|sed "s/$/:2379/g"|xargs|sed 's/ /,/g')"
+	ENDPOINTS="$(cat inventory/masters|awk -F'//' '{print $2}'|awk -F':' '{print $1}'|sed "s/^/https:\\/\\//g"|sed "s/$/:2379/g"|xargs|sed 's/ /,/g')"
 	echo "ENDPOINTS: $ENDPOINTS"
 fi
 
 HAPROXYAPI="$(cat inventory/masters|egrep -o "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"|awk '{print $1":443"}'|xargs)"
 if [ -z "$(echo $HAPROXYAPI)" ]; then
-	HAPROXYAPI="$(cat inventory/masters|awk -F'=' '{print $2}'|sed 's/http:\/\///g'|awk -F':' '{print $1":443"}'|xargs)"
+	HAPROXYAPI="$(cat inventory/masters|awk -F'=' '{print $2}'|sed 's/https:\/\///g'|awk -F':' '{print $1":443"}'|xargs)"
 fi
 
 # create cloud config folder
@@ -126,44 +158,72 @@ EOF
 )
 fi
 netconf=$(echo "$netconf"|sed -e 's/\(.*\)/    \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')
-cat certonly-tpl.yaml | sed -e "s/%NETSECTION%/$netconf/g" >  certonly-tpl.yaml2
-###OpenStack DNS
-if [ -f cloudconf-openstack ]; then
-netenv="$(cat cloudconf-openstack)"
-cloudconf=$(cat << EOF
-- name: openstackhosts.service
-  content: |
-    [Unit]
-    Description=OpenStack Hostsfile Updated
-    [Service]
-    Type=simple
-    ExecStartPre=-/usr/bin/rkt rm --uuid-file=/var/run/openstackhosts.uuid
-    ExecStart=/usr/bin/rkt --insecure-options=all run %NETENV% --net=host --volume hosts,kind=host,source=/etc/hosts,readOnly=false --mount volume=hosts,target=/etc/hosts --volume dns,kind=host,source=/etc/resolv.conf --mount volume=dns,target=/etc/resolv.conf --uuid-file-save=/var/run/openstackhosts.uuid docker://michalzxc/openstackhosts:latest --caps-retain="CAP_SYS_ADMIN,CAP_DAC_READ_SEARCH,CAP_CHOWN" --exec /usr/local/sbin/hostsupdate
-    [Install]
-    WantedBy=multi-user.target
-- name: openstackhosts.timer
-  command: start
-  enable: true
-  content: |
-    [Unit]
-    Description=OpenStack Hostsfile Updated
-    [Timer]
-    Unit=openstackhosts.service
-    OnCalendar=*:0/1
-    [Install]
-    WantedBy=multi-user.target
+cat certonly-tpl.yaml | sed -e "s/%NETSECTION%/$netconf/g" >  tmp/certonly-tpl.yaml2a
+
+if [ $NOETCDCLUSTER -eq 1 ]; then
+	etcdsection=""
+	etcdenable="false"
+	etcdcommand="stop"
+else
+	etcdenable="true"
+	etcdcommand="start"
+etcdsection=$(cat << EOF
+[Service]
+Environment="ETCD_IMAGE_TAG=v3.2.2"
+Environment="ETCD_USER=root"
+Environment="ETCD_DATA_DIR=/var/lib/etcd"
+Environment="ETCD_SSL_DIR=/etc/kubernetes/ssl/"
+Environment="ETCD_OPTS=--name %HOST% \
+  --listen-client-urls https://0.0.0.0:2379 \
+  --advertise-client-urls https://%ETCDADVERTISEIP%:2379 \
+  --listen-peer-urls https://0.0.0.0:2380 \
+  --initial-advertise-peer-urls https://%IP%:2380 \
+  --initial-cluster %ETCD_INITIAL_CLUSTER% \
+  --initial-cluster-token mytoken \
+  --initial-cluster-state %ETCD_INITIAL_CLUSTER_STATE% \
+  --client-cert-auth \
+  --trusted-ca-file /etc/ssl/certs/ca.pem \
+  --cert-file /etc/ssl/certs/%NODETYPE%.pem \
+  --key-file /etc/ssl/certs/%NODETYPE%-key.pem \
+  --peer-client-cert-auth \
+  --peer-trusted-ca-file /etc/ssl/certs/ca.pem \
+  --peer-cert-file /etc/ssl/certs/%NODETYPE%.pem \
+  --peer-key-file /etc/ssl/certs/%NODETYPE%-key.pem \
+  --auto-compaction-retention 1"
 EOF
 )
-	cloudconf="$(echo -e "$cloudconf"|sed -e "s@%NETENV%@$netenv@g")"
-	cloudconf=$(echo "$cloudconf"|sed -e 's/\(.*\)/    \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')
-else
-	cloudconf=""
+etcdsection=$(echo "$etcdsection"|sed -e 's/\(.*\)/      \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n'|sed 's/\\n$//g')
 fi
-cat certonly-tpl.yaml2 | sed -e "s/%CLOUDSECTION%/$cloudconf/g" >  certonly-tpl.yaml3
+cat tmp/certonly-tpl.yaml2a | sed -e "s/%ETCDSECTION%/$etcdsection/g" >  tmp/certonly-tpl.yaml2s
+cat tmp/certonly-tpl.yaml2s | sed -e "s/%ETCDENABLE%/$etcdenable/g" >  tmp/certonly-tpl.yaml2d
+cat tmp/certonly-tpl.yaml2d | sed -e "s/%ETCDENABLE%/$etcdenable/g" >  tmp/certonly-tpl.yaml2e
+cat tmp/certonly-tpl.yaml2e | sed -e "s/%ETCDCOMMAND%/$etcdcommand/g" >  tmp/certonly-tpl.yaml2
+
+#ROOT SSH keys
+rootsshkeys=$(cat ssh/root|sed -e 's/\(.*\)/  \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n'|sed 's/\\n$//g')
+cat tmp/certonly-tpl.yaml2 | sed -e "s/%ROOTSSHKEYS%/$rootsshkeys/g" >  tmp/certonly-tpl.yaml2b
+#users
+if [ ! -z "$(for user in password/*;do basename $user; done)" ]; then
+	for user in password/*; do
+		user=$(basename $user)
+		password=$(cat password/$user)
+		keys=$(cat ssh/$user|sed "s/^/      /g")
+		rm tmp/user_$user
+		echo "  - name: \"$user\"">tmp/user_$user
+		echo "    passwd: \"$password\"">>tmp/user_$user
+		echo "    groups:">>tmp/user_$user
+		echo "     - \"sudo\"">>tmp/user_$user
+		echo "     - \"docker\"">>tmp/user_$user
+		echo "    ssh_authorized_keys:">>tmp/user_$user
+		echo "$keys">>tmp/user_$user
+	done
+fi
+users=$(cat tmp/user_*|sed -e 's/\(.*\)/\1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n'|sed 's/\\n$//g')
+cat tmp/certonly-tpl.yaml2b | sed -e "s/%USERS%/$users/g" > tmp/certonly-tpl.yaml2c
 
 # bash templating
 rm -f inventory/node-${HOST}/cloud-config/openstack/latest/user_data
-cat certonly-tpl.yaml3 | \
+cat tmp/certonly-tpl.yaml2c | \
 sed -e s/%HOST%/${HOST}/g | \
 sed -e "s/%INSTALL_SCRIPT%/$(<inventory/node-${HOST}/install.sh sed -e 's/\(.*\)/      \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')/g" | \
 sed -e "s/%CA_PEM%/$(<ssl/ca.pem sed -e 's/\(.*\)/      \1/g' | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')/g" | \
@@ -181,13 +241,8 @@ sed -e s/%GW%/${GW}/g | \
 sed -e s/%ETCD_INITIAL_CLUSTER_STATE%/${ETCD_INITIAL_CLUSTER_STATE}/g | \
 sed -e s/%HOSTIP%/${HOSTIP}/g > inventory/node-${HOST}/cloud-config/openstack/latest/user_data
 
-if [ $NOETCDCLUSTER -eq 1 ]; then
-	cat inventory/node-${HOST}/cloud-config/openstack/latest/user_data | \
-	 grep -v "ETCD_INITIAL_CLUSTER_STATE" | \
-	 grep -v "ETCD_LISTEN_PEER_URLS" | \
-	 grep -v "ETCD_INITIAL_CLUSTER" | \
-	 grep -v "ETCD_INITIAL_ADVERTISE_PEER_URLS" > inventory/node-${HOST}/cloud-config/openstack/latest/user_data_new
-	 mv inventory/node-${HOST}/cloud-config/openstack/latest/user_data_new inventory/node-${HOST}/cloud-config/openstack/latest/user_data
-fi
-
 ./build-image.sh inventory/node-${HOST}
+
+rm tmp/*
+
+echo "$@" > inventory/node-${HOST}/parameters

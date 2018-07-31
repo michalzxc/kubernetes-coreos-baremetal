@@ -16,3 +16,4 @@ DNS.6 = api-dev02.retailcloud.net
 DNS.7 = api-prod02.retailcloud.net
 IP.1 = 10.3.0.1
 IP.2 = $ENV::IP
+IP.3 = 127.0.0.1
