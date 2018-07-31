@@ -284,6 +284,7 @@ spec:
     - --tls-cert-file=/etc/kubernetes/ssl/apiserver.pem
     - --tls-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem
     - --client-ca-file=/etc/kubernetes/ssl/ca.pem
+    - --requestheader-client-ca-file=/etc/kubernetes/ssl/ca.pem
     - --service-account-key-file=/etc/kubernetes/ssl/accounts.pem
     - --runtime-config=extensions/v1beta1/networkpolicies=true
     - --anonymous-auth=false
@@ -633,98 +634,137 @@ spec:
 EOF
     fi
 
-    local TEMPLATE=/srv/kubernetes/manifests/heapster-de.yaml
+    local TEMPLATE=/srv/kubernetes/manifests/metric-server.yaml
     if [ ! -f $TEMPLATE ]; then
         echo "TEMPLATE: $TEMPLATE"
         mkdir -p $(dirname $TEMPLATE)
         cat << EOF > $TEMPLATE
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: metrics-server:system:auth-delegator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+- kind: ServiceAccount
+  name: metrics-server
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: metrics-server-auth-reader
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: extension-apiserver-authentication-reader
+subjects:
+- kind: ServiceAccount
+  name: metrics-server
+  namespace: kube-system
+---
+apiVersion: apiregistration.k8s.io/v1beta1
+kind: APIService
+metadata:
+  name: v1beta1.metrics.k8s.io
+spec:
+  service:
+    name: metrics-server
+    namespace: kube-system
+  group: metrics.k8s.io
+  version: v1beta1
+  insecureSkipTLSVerify: true
+  groupPriorityMinimum: 100
+  versionPriority: 100
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: metrics-server
+  namespace: kube-system
+---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: heapster-v1.2.0
+  name: metrics-server
   namespace: kube-system
   labels:
-    k8s-app: heapster
-    kubernetes.io/cluster-service: "true"
-    version: v1.2.0
+    k8s-app: metrics-server
 spec:
-  replicas: 1
   selector:
     matchLabels:
-      k8s-app: heapster
-      version: v1.2.0
+      k8s-app: metrics-server
   template:
     metadata:
+      name: metrics-server
       labels:
-        k8s-app: heapster
-        version: v1.2.0
-      annotations:
-        scheduler.alpha.kubernetes.io/critical-pod: ''
+        k8s-app: metrics-server
     spec:
+      serviceAccountName: metrics-server
       containers:
-        - image: gcr.io/google_containers/heapster:v1.2.0
-          name: heapster
-          livenessProbe:
-            httpGet:
-              path: /healthz
-              port: 8082
-              scheme: HTTP
-            initialDelaySeconds: 180
-            timeoutSeconds: 5
-          command:
-            - /heapster
-            - --source=kubernetes.summary_api:''
-        - image: gcr.io/google_containers/addon-resizer:1.6
-          name: heapster-nanny
-          resources:
-            limits:
-              cpu: 50m
-              memory: 90Mi
-            requests:
-              cpu: 50m
-              memory: 90Mi
-          env:
-            - name: MY_POD_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
-            - name: MY_POD_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
-          command:
-            - /pod_nanny
-            - --cpu=80m
-            - --extra-cpu=4m
-            - --memory=200Mi
-            - --extra-memory=4Mi
-            - --threshold=5
-            - --deployment=heapster-v1.2.0
-            - --container=heapster
-            - --poll-period=300000
-            - --estimator=exponential
-EOF
-    fi
-
-    local TEMPLATE=/srv/kubernetes/manifests/heapster-svc.yaml
-    if [ ! -f $TEMPLATE ]; then
-        echo "TEMPLATE: $TEMPLATE"
-        mkdir -p $(dirname $TEMPLATE)
-        cat << EOF > $TEMPLATE
-kind: Service
+      - name: metrics-server
+        image: gcr.io/google_containers/metrics-server-amd64:v0.2.1
+        imagePullPolicy: Always
+        command:
+        - /metrics-server
+        - --source=kubernetes.summary_api:''
+---
 apiVersion: v1
+kind: Service
 metadata:
-  name: heapster
+  name: metrics-server
   namespace: kube-system
   labels:
-    kubernetes.io/cluster-service: "true"
-    kubernetes.io/name: "Heapster"
+    kubernetes.io/name: "Metrics-server"
 spec:
-  ports:
-    - port: 80
-      targetPort: 8082
   selector:
-    k8s-app: heapster
+    k8s-app: metrics-server
+  ports:
+  - port: 443
+    protocol: TCP
+    targetPort: 443
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: system:metrics-server
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - nodes
+  - nodes/stats
+  - namespaces
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - "extensions"
+  resources:
+  - deployments
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: system:metrics-server
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:metrics-server
+subjects:
+- kind: ServiceAccount
+  name: metrics-server
+  namespace: kube-system
 EOF
     fi
 
@@ -1226,9 +1266,9 @@ function start_addons {
     curl --silent -H "Content-Type: application/yaml" -XPOST -d"$(cat /srv/kubernetes/manifests/kube-dns-de.yaml)" "http://127.0.0.1:8080/apis/extensions/v1beta1/namespaces/kube-system/deployments" > /dev/null
     curl --silent -H "Content-Type: application/yaml" -XPOST -d"$(cat /srv/kubernetes/manifests/kube-dns-svc.yaml)" "http://127.0.0.1:8080/api/v1/namespaces/kube-system/services" > /dev/null
     curl --silent -H "Content-Type: application/yaml" -XPOST -d"$(cat /srv/kubernetes/manifests/kube-dns-autoscaler-de.yaml)" "http://127.0.0.1:8080/apis/extensions/v1beta1/namespaces/kube-system/deployments" > /dev/null
-    echo "K8S: Heapster addon"
-    curl --silent -H "Content-Type: application/yaml" -XPOST -d"$(cat /srv/kubernetes/manifests/heapster-de.yaml)" "http://127.0.0.1:8080/apis/extensions/v1beta1/namespaces/kube-system/deployments" > /dev/null
-    curl --silent -H "Content-Type: application/yaml" -XPOST -d"$(cat /srv/kubernetes/manifests/heapster-svc.yaml)" "http://127.0.0.1:8080/api/v1/namespaces/kube-system/services" > /dev/null
+    echo "K8S: Metric Server addon"
+    docker run --rm --net=host -v /srv/kubernetes/manifests:/host/manifests $HYPERKUBE_IMAGE_REPO:$K8S_VER /hyperkube kubectl apply -f /host/manifests/metric-server.yaml
+
     echo "K8S: Dashboard addon"
     curl --silent -H "Content-Type: application/yaml" -XPOST -d"$(cat /srv/kubernetes/manifests/kube-dashboard-de.yaml)" "http://127.0.0.1:8080/apis/extensions/v1beta1/namespaces/kube-system/deployments" > /dev/null
     curl --silent -H "Content-Type: application/yaml" -XPOST -d"$(cat /srv/kubernetes/manifests/kube-dashboard-svc.yaml)" "http://127.0.0.1:8080/api/v1/namespaces/kube-system/services" > /dev/null
